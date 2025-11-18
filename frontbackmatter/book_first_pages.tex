@@ -1,0 +1,114 @@
+% A clean and transparent implementation of Juanjo Mazo's original layout for the first pages of the book 
+
+\newcommand{\thesistitle}{This is the title}
+\pagestyle{empty}
+
+%-----------------------------------------------
+% Page 1: Blank
+%-----------------------------------------------
+\
+\newpage
+
+%-----------------------------------------------
+% Page 2: Blank
+%-----------------------------------------------
+\
+\newpage
+
+%-----------------------------------------------
+% Page 3: Title page
+%-----------------------------------------------
+
+\vspace*{30mm} 
+
+\hrule\hrule\hrule\hrule
+\begin{flushright}
+    {\Large \bf \thesistitle}
+\end{flushright}
+\hrule\hrule\hrule\hrule
+
+\newpage
+
+%-----------------------------------------------
+% Page 4: Series name and volume number
+%-----------------------------------------------
+
+\vspace*{15mm}
+\noindent{\Large \bf Colecci\'on de Estudios de F\'{\i}sica \\
+Vol. ??}
+
+\bigskip
+\bigskip
+\bigskip
+\bigskip
+
+\begin{quotation}
+{\large \em Esta colecci\'on recoge las tesis presentadas en el
+Departamento de F\'{\i}sica de la Materia Condensada de la Universidad
+de Zaragoza desde su constituci\'on en 1987.}
+\end{quotation}
+
+
+\newpage
+
+%-----------------------------------------------
+% Page 5: Title page mirroring the cover and with the logo of Unizar's press
+%-----------------------------------------------
+
+\noindent{\Large \bf Colecci\'on de Estudios de F\'{\i}sica}
+\qquad \qquad \qquad \qquad \quad {\Large \bf Vol. 67}
+
+\vspace{20mm}
+
+\begin{center}
+    {\LARGE \bf \thesistitle}
+
+    \vspace{50mm}
+
+    {\Large \bf Your Full Name}
+
+    \vspace{60mm}
+    % \includegraphics[scale=0.6]{PUZ_293.eps}
+\end{center}
+
+\newpage
+
+%-----------------------------------------------
+% Page 6: Credits and copyright page. 
+% It is provided by Unizar's press, we simply have to swap this page.
+%-----------------------------------------------
+
+This is the credits and copyright page... this page will have to be swapped with the one provided by the press in the final pdf
+
+\newpage
+
+%-----------------------------------------------
+% Page 7: Quote or dedication
+% It is adviced to include something here, otherwise this page is completely removed (not even left blank) and the table of contents start right after the credits and copyright which looks weird.
+%-----------------------------------------------
+
+\vspace*{15mm}
+\begin{quotation}
+\begin{flushright}
+{\bf \em Dedicatoria ...}
+\end{flushright}
+\end{quotation}
+
+\newpage
+
+%-----------------------------------------------
+% Page 8: Black
+% Only present if Page 7 is included
+%-----------------------------------------------
+\
+\newpage
+
+
+%-----------------------------------------------
+% Table of contents
+%-----------------------------------------------
+
+\pagestyle{toc}
+\tableofcontents 
+\newpage
+\pagestyle{regular}

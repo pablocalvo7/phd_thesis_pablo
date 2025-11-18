@@ -1,0 +1,31 @@
+\documentclass[11pt]{book}
+
+\newif \ifforpress % new boolean variable: whether or not the document is for Unizar's press
+\forpressfalse % set the value
+
+\input{config/config}
+\input{config/commands}
+\addbibresource{biblio/bibliography.bib}
+
+\begin{document}
+\pagenumbering{roman}
+
+\ifforpress
+    \include{frontbackmatter/book_first_pages}
+\else
+    \include{frontbackmatter/pdf_first_pages}
+\fi
+% \include{frontbackmatter/acknowledgements}
+\include{frontbackmatter/resumen}
+\include{frontbackmatter/abstract}
+
+\pagenumbering{arabic}
+\include{chapters/chapter}
+
+\appendix
+\include{appendices/appendix}
+
+
+\include{biblio/bib}
+
+\end{document}
