@@ -1,7 +1,8 @@
 \documentclass[11pt]{book}
 
 \newif \ifforpress % new boolean variable: whether or not the document is for Unizar's press
-\forpressfalse % set the value
+%\forpressfalse % set the value
+\forpresstrue
 
 \input{config/config}
 \input{config/commands}
@@ -20,7 +21,12 @@
 \include{frontbackmatter/abstract}
 
 \pagenumbering{arabic}
-\include{chapters/chapter}
+\include{chapters/chapter_1}
+\include{chapters/chapter_2}
+\include{chapters/chapter_3}
+\include{chapters/chapter_4}
+\include{chapters/chapter_5}
+\include{chapters/chapter_6}
 
 \appendix
 \include{appendices/appendix}
