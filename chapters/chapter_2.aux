@@ -1,13 +1,87 @@
 \relax 
 \providecommand\hyper@newdestlabel[2]{}
-\@writefile{toc}{\contentsline {chapter}{\numberline {2}Equivariance detection}{3}{chapter.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {2}Equivariance detection}{13}{chapter.2}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chap:chapter_2}{{2}{3}{Equivariance detection}{chapter.2}{}}
+\newlabel{chap:chapter_2}{{2}{13}{Equivariance detection}{chapter.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.1}Introduction}{13}{section.2.1}\protected@file@percent }
+\newlabel{sec:intro}{{2.1}{13}{Introduction}{section.2.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.2}Mathematical definition of the problem}{15}{section.2.2}\protected@file@percent }
+\newlabel{sec:math_def}{{2.2}{15}{Mathematical definition of the problem}{section.2.2}{}}
+\newlabel{eq:dyn_sys}{{2.1}{15}{Mathematical definition of the problem}{equation.2.2.1}{}}
+\newlabel{eq:sym_def}{{2.2}{15}{Mathematical definition of the problem}{equation.2.2.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.3}A method for detecting equivariant symmetry groups}{15}{section.2.3}\protected@file@percent }
+\newlabel{sec:ESM_method}{{2.3}{15}{A method for detecting equivariant symmetry groups}{section.2.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces Schematic representation of the ESM and its loss function. Left: illustration of ESM's processing flow: the input state $\vec  {x}$ is operated by $M$ parallel branches. Each $\alpha $ branch applies three consecutive blocks: first, a trainable matrix $\hat  {W}_{\alpha }$. Second, the non-trainable function $\vec  {\mathcal  {Y}}$ that produces the dynamical system's time derivative. Third, the matrix $\hat  {W}_{\alpha }^{-1}$. The ESM outputs $M$ predictions $\vec  {y}_{\hat  {W}_{\alpha }} = \hat  {W}_{\alpha }^{-1} \vec  {\mathcal  {Y}} \left ( \hat  {W}_{\alpha } \vec  {x} \right )$. Right: schematic illustration of the single-branch equivariance loss function. It has $K$ global minima of the same magnitude (zero or $l_{\mathrm  {equiv}}(\hat  {I})$), corresponding to the symmetry transformations $\hat  {D}_{\alpha }$. The function may present other local minima of higher magnitude, which are not associated to symmetries. Branch matrices $\hat  {W}_{\alpha }$ (for $\alpha = 1, \dots  , M$) are independently optimized with the equivariance loss and, at the same time, jointly optimized with the repetition loss.\relax }}{16}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:FIG_1}{{2.1}{16}{Schematic representation of the ESM and its loss function. Left: illustration of ESM's processing flow: the input state $\vec {x}$ is operated by $M$ parallel branches. Each $\alpha $ branch applies three consecutive blocks: first, a trainable matrix $\hat {W}_{\alpha }$. Second, the non-trainable function $\vec {\mathcal {Y}}$ that produces the dynamical system's time derivative. Third, the matrix $\hat {W}_{\alpha }^{-1}$. The ESM outputs $M$ predictions $\vec {y}_{\hat {W}_{\alpha }} = \hat {W}_{\alpha }^{-1} \vec {\mathcal {Y}} \left ( \hat {W}_{\alpha } \vec {x} \right )$. Right: schematic illustration of the single-branch equivariance loss function. It has $K$ global minima of the same magnitude (zero or $l_{\mathrm {equiv}}(\hat {I})$), corresponding to the symmetry transformations $\hat {D}_{\alpha }$. The function may present other local minima of higher magnitude, which are not associated to symmetries. Branch matrices $\hat {W}_{\alpha }$ (for $\alpha = 1, \dots , M$) are independently optimized with the equivariance loss and, at the same time, jointly optimized with the repetition loss.\relax }{figure.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.1}Equivariance Seeker Model architecture}{16}{subsection.2.3.1}\protected@file@percent }
+\newlabel{sec:ESM_arch}{{2.3.1}{16}{Equivariance Seeker Model architecture}{subsection.2.3.1}{}}
+\newlabel{eq:outputs}{{2.3}{16}{Equivariance Seeker Model architecture}{equation.2.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.2}Equivariance loss function}{17}{subsection.2.3.2}\protected@file@percent }
+\newlabel{sec:equiv_loss}{{2.3.2}{17}{Equivariance loss function}{subsection.2.3.2}{}}
+\newlabel{eq:l_equiv}{{2.4}{17}{Equivariance loss function}{equation.2.3.4}{}}
+\newlabel{eq:l_equiv_1}{{2.5}{17}{Equivariance loss function}{equation.2.3.5}{}}
+\newlabel{eq:oracle_mse}{{2.6}{17}{Equivariance loss function}{equation.2.3.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.3}Repetition loss function}{18}{subsection.2.3.3}\protected@file@percent }
+\newlabel{sec:rep_loss}{{2.3.3}{18}{Repetition loss function}{subsection.2.3.3}{}}
+\newlabel{eq:l_rep}{{2.7}{18}{Repetition loss function}{equation.2.3.7}{}}
+\newlabel{eq:loss}{{2.8}{18}{Repetition loss function}{equation.2.3.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.4}Branch-removal processes: local minima and redundant solutions}{19}{subsection.2.3.4}\protected@file@percent }
+\newlabel{sec:local_redundant}{{2.3.4}{19}{Branch-removal processes: local minima and redundant solutions}{subsection.2.3.4}{}}
+\newlabel{eq:matrix_d}{{2.9}{20}{Branch-removal processes: local minima and redundant solutions}{equation.2.3.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.5}Verifying the results of the ESM}{20}{subsection.2.3.5}\protected@file@percent }
+\newlabel{sec:verifying}{{2.3.5}{20}{Verifying the results of the ESM}{subsection.2.3.5}{}}
+\newlabel{eq:d_group}{{2.10}{21}{Verifying the results of the ESM}{equation.2.3.10}{}}
+\newlabel{eq:d_clo}{{2.11}{21}{Verifying the results of the ESM}{equation.2.3.11}{}}
+\newlabel{eq:d_inv}{{2.12}{21}{Verifying the results of the ESM}{equation.2.3.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.4}Illustration of the ESM training method}{21}{section.2.4}\protected@file@percent }
+\newlabel{sec:ESM_proc}{{2.4}{21}{Illustration of the ESM training method}{section.2.4}{}}
+\newlabel{eq:cubic_decay}{{2.13}{21}{Illustration of the ESM training method}{equation.2.4.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces Illustration of ESM algorithm for the example $\dot  {x} = - x^3$. The symmetry group has $K = 2$ elements: $D_1 = 1$ (identity) and $D_2 = -1$ in this case. We present two different trainings ($T_a$ and $T_b$) with different random initialization of the trainable parameters of the model, the branch weights $(W_1 , W_2)$. (a-b) Equivariance (blue) and repetition (brown) loss curves as function of epochs for $T_a$ and $T_b$ respectively. Gray curves represent the $\sigma $ (solid) and $A$ (dashed) values as function of the epochs (both normalized to the same arbitrary scale). The dashed vertical lines indicate the epochs at which each variation interval starts: first, $\sigma $ (from $\sigma _0 = 10^4$ to $\delta \sigma = 10^{-2}$) and second, $A$ (from $A_0 = 10^3$ to $\delta A = 10^{-8}$). (c-f) Colour maps of the total loss in the $(W_1 , W_2)$ plane at epochs 400, 655, 800 and 1200 respectively [these epochs are marked with black arrows in both horizontal axes of panels (a) and (b)]. The color bars represent the value of $\mathcal  {L} = \mathcal  {L}_{\mathrm  {equiv}} + \mathcal  {L}_{\mathrm  {rep}}$. In all panels, trajectories in the "space of weights" [coordinates ($W_1$,$W_2$)] in $T_a$ and $T_b$ are plotted in black and red respectively. At each panel, these trajectories are plotted from the initial training location (squares) to the current state at a given epoch (triangles). In panel (f) (final epoch), the final results are represented by circles. The gray segments represent the Gaussian width in the definition of $\mathcal  {L}_{\mathrm  {rep}}$, corresponding to the current value of the hyperparameter $\sigma $. \relax }}{22}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:FIG_2}{{2.2}{22}{Illustration of ESM algorithm for the example $\dot {x} = - x^3$. The symmetry group has $K = 2$ elements: $D_1 = 1$ (identity) and $D_2 = -1$ in this case. We present two different trainings ($T_a$ and $T_b$) with different random initialization of the trainable parameters of the model, the branch weights $(W_1 , W_2)$. (a-b) Equivariance (blue) and repetition (brown) loss curves as function of epochs for $T_a$ and $T_b$ respectively. Gray curves represent the $\sigma $ (solid) and $A$ (dashed) values as function of the epochs (both normalized to the same arbitrary scale). The dashed vertical lines indicate the epochs at which each variation interval starts: first, $\sigma $ (from $\sigma _0 = 10^4$ to $\delta \sigma = 10^{-2}$) and second, $A$ (from $A_0 = 10^3$ to $\delta A = 10^{-8}$). (c-f) Colour maps of the total loss in the $(W_1 , W_2)$ plane at epochs 400, 655, 800 and 1200 respectively [these epochs are marked with black arrows in both horizontal axes of panels (a) and (b)]. The color bars represent the value of $\mathcal {L} = \mathcal {L}_{\mathrm {equiv}} + \mathcal {L}_{\mathrm {rep}}$. In all panels, trajectories in the "space of weights" [coordinates ($W_1$,$W_2$)] in $T_a$ and $T_b$ are plotted in black and red respectively. At each panel, these trajectories are plotted from the initial training location (squares) to the current state at a given epoch (triangles). In panel (f) (final epoch), the final results are represented by circles. The gray segments represent the Gaussian width in the definition of $\mathcal {L}_{\mathrm {rep}}$, corresponding to the current value of the hyperparameter $\sigma $. \relax }{figure.caption.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.3}{\ignorespaces ESM algorithm for the illustrative system $\dot  {x} = -x^3$ for different number of branches: $M = 2$ (blue), $M = 3$ (orange) and $M = 4$ (black). In the left column, the analytical function $\vec  {y}(\vec  {x})$ is used in the ESM. In the right column, a pretrained oracle $\vec  {y}_{\mathrm  {NN}} (\vec  {x})$ is used instead. The gray curves in (b) provide a representation of the dependence of the hyperparameters $\sigma $ (solid), $A$ (dashed) and $\eta $ (dotted) as function of epochs (they are all normalized to the same arbitrary scale). In all panels, the dashed vertical lines mark the epoch at which a hyperparameter starts to decrease. (a-b) Equivariance loss as function of the epochs. The horizontal dashed-dotted line indicates the value $l_{\mathrm  {equiv}}(\hat  {I})$ given by the NN oracle's MSE. (c-d) Repetition loss as function of the epochs. (e-f) Group metric (Eq\nobreakspace  {}\ref {eq:d_group}) as function of the epochs.\relax }}{25}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:FIG_3}{{2.3}{25}{ESM algorithm for the illustrative system $\dot {x} = -x^3$ for different number of branches: $M = 2$ (blue), $M = 3$ (orange) and $M = 4$ (black). In the left column, the analytical function $\vec {y}(\vec {x})$ is used in the ESM. In the right column, a pretrained oracle $\vec {y}_{\mathrm {NN}} (\vec {x})$ is used instead. The gray curves in (b) provide a representation of the dependence of the hyperparameters $\sigma $ (solid), $A$ (dashed) and $\eta $ (dotted) as function of epochs (they are all normalized to the same arbitrary scale). In all panels, the dashed vertical lines mark the epoch at which a hyperparameter starts to decrease. (a-b) Equivariance loss as function of the epochs. The horizontal dashed-dotted line indicates the value $l_{\mathrm {equiv}}(\hat {I})$ given by the NN oracle's MSE. (c-d) Repetition loss as function of the epochs. (e-f) Group metric (Eq~\ref {eq:d_group}) as function of the epochs.\relax }{figure.caption.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.5}Application of the ESM to complex dynamical systems}{27}{section.2.5}\protected@file@percent }
+\newlabel{sec:app_compl}{{2.5}{27}{Application of the ESM to complex dynamical systems}{section.2.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5.1}Thomas' symmetric attractor}{27}{subsection.2.5.1}\protected@file@percent }
+\newlabel{sec:thomas}{{2.5.1}{27}{Thomas' symmetric attractor}{subsection.2.5.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.4}{\ignorespaces ESM algorithm for the Thomas' cyclically symmetric attractor. (a-f) Optimization of the matrices $\{ \hat  {W}_{\alpha } \}$, using both the analytical function $\vec  {y}(\vec  {x})$ and oracle $\vec  {y}_{\mathrm  {NN}}(\vec  {x})$, for $M = 4$ (blue) and $M = 30$ (black). Three quantities are shown as function of the epochs: equivariance loss (a-b), repetition loss (c-d) and group metric (e-f). The gray curves in (b) indicate the variation of $\sigma $, $A$ and $\eta $, and the vertical dashed lines in all panels represent the starting of each hyperparameter decrease. The dashed-dotted lines in (a-b) indicate the bound $l_{\mathrm  {equiv}}(\hat  {I})$ given by the oracle's MSE. In all panels, the red and purple areas indicate the regimes at which some branches have been removed by each of the two final-training processes. (g-h) Branch-removal processes for $M = 30$ using $\vec  {y}_{\mathrm  {NN}} (\vec  {x})$. (g) Removal of matrices in local minima. The plot shows each single-matrix equivariance loss for all the matrices before the removal. The dotted-dashed line represents $l_{\mathrm  {equiv}}(\hat  {I})$, and the dotted line represents the tolerance $\varepsilon _{\mathrm  {equiv}}$ given by the maximum oracle squared error. The inset displays the histogram of squared errors for all ESM training samples, with the dashed-dotted line representing $l_{\mathrm  {equiv}}(\hat  {I})$ the dotted line representing $\varepsilon _{\mathrm  {equiv}}$. (h) Removal of redundant matrices. The plot shows the AED between all possible matrix pairs before the removal.\relax }}{28}{figure.caption.13}\protected@file@percent }
+\newlabel{fig:FIG_4}{{2.4}{28}{ESM algorithm for the Thomas' cyclically symmetric attractor. (a-f) Optimization of the matrices $\{ \hat {W}_{\alpha } \}$, using both the analytical function $\vec {y}(\vec {x})$ and oracle $\vec {y}_{\mathrm {NN}}(\vec {x})$, for $M = 4$ (blue) and $M = 30$ (black). Three quantities are shown as function of the epochs: equivariance loss (a-b), repetition loss (c-d) and group metric (e-f). The gray curves in (b) indicate the variation of $\sigma $, $A$ and $\eta $, and the vertical dashed lines in all panels represent the starting of each hyperparameter decrease. The dashed-dotted lines in (a-b) indicate the bound $l_{\mathrm {equiv}}(\hat {I})$ given by the oracle's MSE. In all panels, the red and purple areas indicate the regimes at which some branches have been removed by each of the two final-training processes. (g-h) Branch-removal processes for $M = 30$ using $\vec {y}_{\mathrm {NN}} (\vec {x})$. (g) Removal of matrices in local minima. The plot shows each single-matrix equivariance loss for all the matrices before the removal. The dotted-dashed line represents $l_{\mathrm {equiv}}(\hat {I})$, and the dotted line represents the tolerance $\varepsilon _{\mathrm {equiv}}$ given by the maximum oracle squared error. The inset displays the histogram of squared errors for all ESM training samples, with the dashed-dotted line representing $l_{\mathrm {equiv}}(\hat {I})$ the dotted line representing $\varepsilon _{\mathrm {equiv}}$. (h) Removal of redundant matrices. The plot shows the AED between all possible matrix pairs before the removal.\relax }{figure.caption.13}{}}
+\newlabel{eq:thomas}{{2.14}{29}{Thomas' symmetric attractor}{equation.2.5.14}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.5}{\ignorespaces ESM algorithm with $M = 30$ branches for the Lorenz system. Three quantities are shown as function of the epochs: equivariance loss (a-b), repetition loss (c-d) and group metric (e-f). Panels (g-h) illustrate the final-training processes using $\vec  {y}_{\mathrm  {NN}} (\vec  {x})$. The remaining details are similar to those in Fig.\nobreakspace  {}\ref {fig:FIG_4}.\relax }}{31}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:FIG_5}{{2.5}{31}{ESM algorithm with $M = 30$ branches for the Lorenz system. Three quantities are shown as function of the epochs: equivariance loss (a-b), repetition loss (c-d) and group metric (e-f). Panels (g-h) illustrate the final-training processes using $\vec {y}_{\mathrm {NN}} (\vec {x})$. The remaining details are similar to those in Fig.~\ref {fig:FIG_4}.\relax }{figure.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5.2}Lorenz system}{32}{subsection.2.5.2}\protected@file@percent }
+\newlabel{sec:lorenz}{{2.5.2}{32}{Lorenz system}{subsection.2.5.2}{}}
+\newlabel{eq:lorenz}{{2.15}{32}{Lorenz system}{equation.2.5.15}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.6}{\ignorespaces ESM algorithm with $M = 30$ branches for the coupled Duffing oscillators. Three quantities are shown as function of the epochs: equivariance loss (a-b), repetition loss (c-d) and group metric (e-f). Panels (g-h) illustrate the final-training processes using $\vec  {y}_{\mathrm  {NN}} (\vec  {x})$. The remaining details are similar to those in Fig.\nobreakspace  {}\ref {fig:FIG_4}.\relax }}{33}{figure.caption.15}\protected@file@percent }
+\newlabel{fig:FIG_6}{{2.6}{33}{ESM algorithm with $M = 30$ branches for the coupled Duffing oscillators. Three quantities are shown as function of the epochs: equivariance loss (a-b), repetition loss (c-d) and group metric (e-f). Panels (g-h) illustrate the final-training processes using $\vec {y}_{\mathrm {NN}} (\vec {x})$. The remaining details are similar to those in Fig.~\ref {fig:FIG_4}.\relax }{figure.caption.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5.3}Coupled Duffing oscillators}{34}{subsection.2.5.3}\protected@file@percent }
+\newlabel{sec:duffing}{{2.5.3}{34}{Coupled Duffing oscillators}{subsection.2.5.3}{}}
+\newlabel{eq:duffing}{{2.16}{34}{Coupled Duffing oscillators}{equation.2.5.16}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.6}Conclusions}{34}{section.2.6}\protected@file@percent }
+\newlabel{sec:conc}{{2.6}{34}{Conclusions}{section.2.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.7}Training details}{35}{section.2.7}\protected@file@percent }
+\newlabel{sec:train_det}{{2.7}{35}{Training details}{section.2.7}{}}
+\newlabel{cases}{{2.17}{35}{Training details}{equation.2.7.17}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2.1}{\ignorespaces Summary of ESM training hyperparameters from each experiment presented in this article. This involves four different systems: the illustrative one-dimensional system (equation \ref {eq:cubic_decay}), Thomas system (equation \ref {eq:thomas}), Lorenz system (equation \ref {eq:lorenz}) and the coupled Duffing oscillators (equation \ref {eq:duffing}).\relax }}{36}{table.caption.18}\protected@file@percent }
+\newlabel{tab:hyp_sum}{{2.1}{36}{Summary of ESM training hyperparameters from each experiment presented in this article. This involves four different systems: the illustrative one-dimensional system (equation \ref {eq:cubic_decay}), Thomas system (equation \ref {eq:thomas}), Lorenz system (equation \ref {eq:lorenz}) and the coupled Duffing oscillators (equation \ref {eq:duffing}).\relax }{table.caption.18}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.7}{\ignorespaces Training of four NN oracles $\vec  {y}_{\mathrm  {NN}}$ prior to ESM training. Each panel correspond to a dynamical system and shows the oracle's MSE loss as function of epochs for training (black curve) and validation (blue curve) data sets.\relax }}{37}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:FIG_AP}{{2.7}{37}{Training of four NN oracles $\vec {y}_{\mathrm {NN}}$ prior to ESM training. Each panel correspond to a dynamical system and shows the oracle's MSE loss as function of epochs for training (black curve) and validation (blue curve) data sets.\relax }{figure.caption.19}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.8}Branch matrix results}{37}{section.2.8}\protected@file@percent }
+\newlabel{sec:mat_res}{{2.8}{37}{Branch matrix results}{section.2.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2.2}{\ignorespaces Obtained matrix values $\{ \hat  {W}_{\alpha } \}$ using ESMs with $M = 30$ branches and NN oracles for the systems presented in section \ref {sec:app_compl}: Thomas system (equation \ref {eq:thomas}), Lorenz system (equation \ref {eq:lorenz}) and the coupled Duffing oscillators (equation \ref {eq:duffing}).\relax }}{38}{table.caption.20}\protected@file@percent }
+\newlabel{tab:mat_res}{{2.2}{38}{Obtained matrix values $\{ \hat {W}_{\alpha } \}$ using ESMs with $M = 30$ branches and NN oracles for the systems presented in section \ref {sec:app_compl}: Thomas system (equation \ref {eq:thomas}), Lorenz system (equation \ref {eq:lorenz}) and the coupled Duffing oscillators (equation \ref {eq:duffing}).\relax }{table.caption.20}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.9}Impact of data set size on ESM accuracy and group-based fine-tuning}{38}{section.2.9}\protected@file@percent }
+\newlabel{sec:number_data}{{2.9}{38}{Impact of data set size on ESM accuracy and group-based fine-tuning}{section.2.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.8}{\ignorespaces Group metric (black) and ground-truth metric (red) versus percentage of data from the original training set presented in the main text. Circles with solid lines show results after the training process proposed in the manuscript, while triangles with dashed lines show results after fine-tuning with $\mathcal  {L}_{\mathrm  {fine-tuning}} = \mathcal  {L}_{\mathrm  {equiv}} + \mathcal  {L}_{\mathrm  {group}}$. (a) Thomas system. (b) Lorenz system. (c) Coupled Duffing oscillators.\relax }}{39}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:FIG_AP_2}{{2.8}{39}{Group metric (black) and ground-truth metric (red) versus percentage of data from the original training set presented in the main text. Circles with solid lines show results after the training process proposed in the manuscript, while triangles with dashed lines show results after fine-tuning with $\mathcal {L}_{\mathrm {fine-tuning}} = \mathcal {L}_{\mathrm {equiv}} + \mathcal {L}_{\mathrm {group}}$. (a) Thomas system. (b) Lorenz system. (c) Coupled Duffing oscillators.\relax }{figure.caption.21}{}}
+\newlabel{eq:d_truth}{{2.19}{39}{Impact of data set size on ESM accuracy and group-based fine-tuning}{equation.2.9.19}{}}
+\newlabel{eq:L_fine_tun}{{2.20}{39}{Impact of data set size on ESM accuracy and group-based fine-tuning}{equation.2.9.20}{}}
+\newlabel{eq:L_group}{{2.21}{39}{Impact of data set size on ESM accuracy and group-based fine-tuning}{equation.2.9.21}{}}
 \@setckpt{chapters/chapter_2}{
-\setcounter{page}{4}
-\setcounter{equation}{0}
-\setcounter{enumi}{0}
+\setcounter{page}{41}
+\setcounter{equation}{21}
+\setcounter{enumi}{2}
 \setcounter{enumii}{0}
 \setcounter{enumiii}{0}
 \setcounter{enumiv}{0}
@@ -15,24 +89,24 @@
 \setcounter{mpfootnote}{0}
 \setcounter{part}{0}
 \setcounter{chapter}{2}
-\setcounter{section}{0}
+\setcounter{section}{9}
 \setcounter{subsection}{0}
 \setcounter{subsubsection}{0}
 \setcounter{paragraph}{0}
 \setcounter{subparagraph}{0}
-\setcounter{figure}{0}
-\setcounter{table}{0}
+\setcounter{figure}{8}
+\setcounter{table}{2}
 \setcounter{AM@survey}{0}
 \setcounter{lstnumber}{1}
 \setcounter{lofdepth}{1}
 \setcounter{lotdepth}{1}
 \setcounter{parentequation}{0}
-\setcounter{caption@flags}{0}
+\setcounter{caption@flags}{2}
 \setcounter{continuedfloat}{0}
-\setcounter{section@level}{0}
-\setcounter{Item}{0}
+\setcounter{section@level}{1}
+\setcounter{Item}{2}
 \setcounter{Hfootnote}{0}
-\setcounter{bookmark@seq@number}{4}
+\setcounter{bookmark@seq@number}{22}
 \setcounter{tabx@nest}{0}
 \setcounter{listtotal}{0}
 \setcounter{listcount}{0}

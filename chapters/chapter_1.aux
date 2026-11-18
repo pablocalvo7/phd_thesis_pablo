@@ -4,9 +4,25 @@
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
 \newlabel{chap:chapter_1}{{1}{1}{Invariance detection via inverse design}{chapter.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.1}{\ignorespaces Schematic representation of the SSNN: Magnitudes $\vec  {y}$ enter a standard NN, which yields a vector $\vec  {x}_{\mathrm  {NN}}^{(0)}$. This NN is complemented with a set of $M$ branches. The $\alpha $-th branch performs a linear transformation $\hat  {W}_{\alpha } \vec  {x}_{\mathrm  {NN}}^{(0)}$, providing a prediction $\vec  {x}_{\mathrm  {NN}}^{(\alpha )}$ for the physical parameters. Without the branches, the presence of symmetries would lead to incorrect predictions. In contrast, the SSNN, trained with the customized loss function given by Eq. \eqref  {eq:loss}, predicts parameters accurately from available data. After training, the branches $\hat  {W}_{\alpha }$ provide a representation of the system's symmetry group.\relax }}{2}{figure.caption.5}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:FIG_1}{{1.1}{2}{Schematic representation of the SSNN: Magnitudes $\vec {y}$ enter a standard NN, which yields a vector $\vec {x}_{\mathrm {NN}}^{(0)}$. This NN is complemented with a set of $M$ branches. The $\alpha $-th branch performs a linear transformation $\hat {W}_{\alpha } \vec {x}_{\mathrm {NN}}^{(0)}$, providing a prediction $\vec {x}_{\mathrm {NN}}^{(\alpha )}$ for the physical parameters. Without the branches, the presence of symmetries would lead to incorrect predictions. In contrast, the SSNN, trained with the customized loss function given by Eq. \eqref {eq:loss}, predicts parameters accurately from available data. After training, the branches $\hat {W}_{\alpha }$ provide a representation of the system's symmetry group.\relax }{figure.caption.5}{}}
+\newlabel{eq:symmetry}{{1.1}{3}{Invariance detection via inverse design}{equation.1.0.1}{}}
+\newlabel{eq:loss}{{1.2}{3}{Invariance detection via inverse design}{equation.1.0.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.2}{\ignorespaces Iterative SSNN algorithm for $w = z^3$. (a) Learning curve with grey arrows indicating the epoch of branch removal. (b) Loss jump dependence with the number of branches. (c) $A_{\alpha }$ for $\alpha = 1,...,M$ at $M=5$ (above), $M=4$ (middle), and $M=3$ (below), with the black dashed line representing $1/K = 1/3$. Grey panels at $M=4,3$ indicate removed branches. (d) Predictions of the training data set from SSNN with $M=3$. Three points highlighted by black crosses represent predictions $\vec  {x}_{\mathrm  {NN}}^{(\alpha )}(\vec  {y})$ from a single input data related by $\hat  {D}_{\alpha }^{\mathrm  {NN}}$. (e) Group metrics showing $d_{\mathrm  {closed}}$ (red curves) and $d_{\mathrm  {inverse}}$ (blue curves) for all branches (solid lines) and active branches (dashed lines). (f) Evolution of the distance between the $\hat  {D}_{\alpha }^{\mathrm  {NN}}$ and the ground truth matrix $\hat  {D}_{2}$ during the first training stage ($M = 7$). (g) Same as (f) for $\hat  {D}_{3}$.\relax }}{4}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:FIG_2}{{1.2}{4}{Iterative SSNN algorithm for $w = z^3$. (a) Learning curve with grey arrows indicating the epoch of branch removal. (b) Loss jump dependence with the number of branches. (c) $A_{\alpha }$ for $\alpha = 1,...,M$ at $M=5$ (above), $M=4$ (middle), and $M=3$ (below), with the black dashed line representing $1/K = 1/3$. Grey panels at $M=4,3$ indicate removed branches. (d) Predictions of the training data set from SSNN with $M=3$. Three points highlighted by black crosses represent predictions $\vec {x}_{\mathrm {NN}}^{(\alpha )}(\vec {y})$ from a single input data related by $\hat {D}_{\alpha }^{\mathrm {NN}}$. (e) Group metrics showing $d_{\mathrm {closed}}$ (red curves) and $d_{\mathrm {inverse}}$ (blue curves) for all branches (solid lines) and active branches (dashed lines). (f) Evolution of the distance between the $\hat {D}_{\alpha }^{\mathrm {NN}}$ and the ground truth matrix $\hat {D}_{2}$ during the first training stage ($M = 7$). (g) Same as (f) for $\hat {D}_{3}$.\relax }{figure.caption.6}{}}
+\newlabel{eq:dalpha}{{1.3}{5}{Invariance detection via inverse design}{equation.1.0.3}{}}
+\newlabel{eq:dclosed}{{1.6}{6}{Invariance detection via inverse design}{equation.1.0.6}{}}
+\newlabel{eq:dinverse}{{1.7}{7}{Invariance detection via inverse design}{equation.1.0.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.3}{\ignorespaces  Optical transmittance spectra symmetries in a multilayer stack: (a) Schematic representation of the considered photonic system. (b) Loss jump variation with the number of branches. The inset displays $A_{\alpha }$ for $\alpha = 1,...,M$ at three different stages: $M=4,3,2$. The black dashed line represents $1/K = 1/2$. The grey regions at $M=3,2$ indicate the removed branches. (c) Group metrics depicted as a function of $M$. (d) SSNN predictions as a function of the true values of $\varepsilon _1$, $\varepsilon _2$, and $\varepsilon _3$. \relax }}{8}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:FIG_3}{{1.3}{8}{Optical transmittance spectra symmetries in a multilayer stack: (a) Schematic representation of the considered photonic system. (b) Loss jump variation with the number of branches. The inset displays $A_{\alpha }$ for $\alpha = 1,...,M$ at three different stages: $M=4,3,2$. The black dashed line represents $1/K = 1/2$. The grey regions at $M=3,2$ indicate the removed branches. (c) Group metrics depicted as a function of $M$. (d) SSNN predictions as a function of the true values of $\varepsilon _1$, $\varepsilon _2$, and $\varepsilon _3$. \relax }{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.4}{\ignorespaces  Applying SSNN to discover symmetries in a 4-atom molecular spectra. For each molecular geometry (rectangle, square, tetrahedron), we present the dependence with the number of branches of both the loss jump and the group metrics (circles: all branches are considered; triangles: only active branches are included in the calculation). Figures (a-b), (c-d), and (e-f) correspond to the rectangular, square, and tetrahedral molecules, respectively. \relax }}{10}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:FIG_4}{{1.4}{10}{Applying SSNN to discover symmetries in a 4-atom molecular spectra. For each molecular geometry (rectangle, square, tetrahedron), we present the dependence with the number of branches of both the loss jump and the group metrics (circles: all branches are considered; triangles: only active branches are included in the calculation). Figures (a-b), (c-d), and (e-f) correspond to the rectangular, square, and tetrahedral molecules, respectively. \relax }{figure.caption.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1.5}{\ignorespaces  Application of SSNN to discover symmetries in spectra of a complex chain-like molecule with randomly coupled atoms. The inset to (a) shows a schematic representation of the molecule geometry. The atoms in blue have random atomic energy $\epsilon _{i} \in [1,-6]$, while those in red have energy $\mu =-1$. Only nearest-neighbor hoppings are considered; in all cases, its value is $J=3$, except for the 4 blue atoms forming the central ring (atoms 3-6) where the hopping is $J'=0.5$. (a) Loss jump as a function of the decreasing number of branches. (g) Group metrics vs. the number of branches, when either all branches or only the active ones are included in the calculation. \relax }}{12}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:FIG_5}{{1.5}{12}{Application of SSNN to discover symmetries in spectra of a complex chain-like molecule with randomly coupled atoms. The inset to (a) shows a schematic representation of the molecule geometry. The atoms in blue have random atomic energy $\epsilon _{i} \in [1,-6]$, while those in red have energy $\mu =-1$. Only nearest-neighbor hoppings are considered; in all cases, its value is $J=3$, except for the 4 blue atoms forming the central ring (atoms 3-6) where the hopping is $J'=0.5$. (a) Loss jump as a function of the decreasing number of branches. (g) Group metrics vs. the number of branches, when either all branches or only the active ones are included in the calculation. \relax }{figure.caption.9}{}}
 \@setckpt{chapters/chapter_1}{
-\setcounter{page}{2}
-\setcounter{equation}{0}
+\setcounter{page}{13}
+\setcounter{equation}{7}
 \setcounter{enumi}{0}
 \setcounter{enumii}{0}
 \setcounter{enumiii}{0}
@@ -20,19 +36,19 @@
 \setcounter{subsubsection}{0}
 \setcounter{paragraph}{0}
 \setcounter{subparagraph}{0}
-\setcounter{figure}{0}
+\setcounter{figure}{5}
 \setcounter{table}{0}
 \setcounter{AM@survey}{0}
 \setcounter{lstnumber}{1}
 \setcounter{lofdepth}{1}
 \setcounter{lotdepth}{1}
 \setcounter{parentequation}{0}
-\setcounter{caption@flags}{0}
+\setcounter{caption@flags}{2}
 \setcounter{continuedfloat}{0}
 \setcounter{section@level}{0}
 \setcounter{Item}{0}
 \setcounter{Hfootnote}{0}
-\setcounter{bookmark@seq@number}{3}
+\setcounter{bookmark@seq@number}{4}
 \setcounter{tabx@nest}{0}
 \setcounter{listtotal}{0}
 \setcounter{listcount}{0}

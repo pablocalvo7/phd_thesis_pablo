@@ -3,7 +3,323 @@
 \label{chap:chapter_3}
 \thispagestyle{empty}
 
-This is a chapter...
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INTRODUCTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Introduction}\label{sec:dbc_intro}
+
+Differential equations are the backbone of calculus, as they describe the relationships between variables and their derivatives. They are essential to our comprehension of the natural world in physics areas and are extensively employed in other domains of knowledge. The challenge is that most differential equations do not have manageable analytical solutions, so we often have to rely on numerical methods instead.
+
+As deep learning becomes widely used across scientific fields, interest in applying it to differential equations has grown rapidly, positioning it as a promising alternative or complement to traditional numerical methods. Early attempts to solve differential equations with Neural Networks (NN) date back to the 1990s [REFs]. These methods relied on trial functions that satisfied boundary conditions, which had the drawback that each problem required a different trial function. More recently, new techniques have been developed to overcome the limitations of the early methods, most notably the Physics-Informed Neural Networks (PINNs) [REFs]. A PINN is a NN that embeds the governing physical laws, usually written as differential equations, directly into its training process. Instead of learning from data alone, a PINN is trained to minimize a loss function that includes the residuals of the governing differential equations and related quantities (initial and/or boundary conditions), the error in observed data (if available), and, in general, any other constraint known of the solution. NNs can naturally incorporate differential equations because they can compute derivatives through automatic differentiation.
+
+PINNs are already applied across various fields, including fluid dynamics [REFs], quantum mechanics [REFs], photonics [REFs], or engineering studies [REFs]. This underscores their applicability to a wide range of scientific fields, motivating numerous studies focused on their advancement and optimization [REFs].
+
+However, PINNs still face significant challenges [REFs]. One major issue is their tendency to converge to trivial (null) solutions when applied to differential equations over large domains. Additionally, they can also produce results that appear reliable - because the total loss is low - yet are actually incorrect. Such difficulties are especially evident in differential equations whose solutions or governing terms exhibit multiscale features and/or strongly oscillatory behavior.
+
+Several approaches have been proposed to address the challenges faced by PINNs when dealing with differential equations that involve multiscale terms or solutions exhibiting strong short-scale variations. These approaches include adding regularization terms to keep the different components of the loss at comparable scales or using two NNs to separately handle the low-order and high-order oscillatory terms [REFs]. Unbalanced gradients during backpropagation have been identified as a potential cause of PINN malfunction [REFs], suggesting that adjusting the learning rate for individual loss terms may improve predictive accuracy.
+
+Chaotic systems provide a typical example of differential equations with highly oscillatory solutions. PINNs have been shown to struggle with such systems, as reported in Ref. [REFs], where a PINN was applied to solve the double pendulum equation. Several strategies have been proposed to overcome this limitation. One notable approach incorporates Fourier layers into the PINN architecture, applying sinusoidal filters to the input. This modification improves the PINN capacity to represent and adapt to the rapid variations characteristic of highly oscillatory solutions [REFs]. Another technique uses transfer learning, in which the PINN is first trained on low-frequency problems and then fine-tuned on high-frequency ones [REFs]. This approach has been shown to yield improved predictive accuracy for oscillatory equations, such as the damped cosine.
+
+Finally, PINNs tend to enforce initial conditions and reduce the differential equation loss independently, which can result in solutions that are not globally consistent across the domain [REFs]. One possible strategy is to divide the domain into smaller subintervals and train an independent PINN on each segment. However, this strategy significantly limits the model's ability to generalize across the full domain.
+
+Here, we introduce the Dynamic Boundary Constraint (DBC) algorithm as a solution to the limitations described above for PINNs. The core principle of the algorithm lies in the incorporation of additional restrictions, interpreted as boundary conditions, which are dynamically integrated into the training process alongside the existing initial conditions, thus enabling the PINN to ensure accuracy throughout the domain.
+
+While enriching the PINN loss function with additional physical, analytical, or structural constraints is a well-established strategy in the literature -such as gradient-enhanced [REFs], symmetry-enforced [REFs], and analytically constrained formulations [REFs]-our contribution focuses on a specific formulation tailored to the problem considered here.
+
+The rest of this paper is organized as follows. Section \ref{sec:dbc_method} presents the DBC method within the general PINN framework for solving Ordinary Differential Equation (ODE) systems. In Section \ref{sec:dbc_oscillator}, we highlight how standard PINNs struggle to accurately solve even a basic ODE, such as the harmonic oscillator. In contrast, the proposed DBC method yields a solution that closely matches the correct result. To further investigate the capabilities of the DBC method, we next apply it to a series of more challenging problems. In Section \ref{sec:dbc_multiscale}, to illustrate a multiscale problem, we will model the trajectory of a light ray in curved spacetime near a massive gravitational object (e.g., a black hole) using the optical ray equation. In Section \ref{sec:dbc_lorenz}, highly oscillatory behavior is studied with the Lorenz equations, the most iconic dynamical system that laid the foundation for chaos theory. These examples evaluate the robustness of our method on ODEs with multiscale and highly oscillatory behavior, while also demonstrating its applicability across diverse areas of physics.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PINNS WITH DYNAMIC BOUNDARY CONSTRAINTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{PINNs with dynamic boundary constraints}\label{sec:dbc_method}
+
+As described in the introduction, PINNs are standard NNs that embed the governing differential equation, along with its initial and/or boundary conditions, directly into the loss function. In this work, we focus on general ODE systems. Mathematically, such a system can be expressed as:
+
+\begin{equation}\label{eq:dbc_1}
+\mathcal{D}\left(x,\vec{y},\vec{y}^{(1)},\vec{y}^{(2)},\ldots,\vec{y}^{(k)}\right)=\vec{0},
+\end{equation}
+
+where $x \in \Omega \subset \mathbb{R}$ is the independent variable in the domain $\Omega, \vec{y} = \vec{y}(x) \in \mathbb{R}^m$ is the unknown (possibly vector-valued) solution, the superscript denoting differentiation of order $k$ with respect to $x$, and $\mathcal{D}$ denotes a possibly linear system of ODEs.
+
+The differential Eq. \ref{eq:dbc_1} is then solved for a given set of initial conditions:
+
+\begin{equation}\label{eq:dbc_2}
+\left\{\vec{y}(x_0),\vec{y}^{(1)}(x_0),\ldots,\vec{y}^{(k-1)}(x_0)\right\},
+\end{equation}
+
+where $x_0$ denotes the point at which the initial conditions are imposed.
+
+A finite set of $N$ collocation points in the interior of $\Omega$, denoted by $\Gamma_{\mathrm{ODE}}$, is introduced to discretize the solution. The PINN is evaluated at the points in $\Gamma_{\mathrm{ODE}}$, during the training process.
+
+The canonical loss function of a PINN consists of two contributions:
+
+\begin{equation}\label{eq:dbc_3}
+\mathbf{L}(\theta,\Gamma_{\mathrm{ODE}})=\omega_{\mathrm{ODE}}\mathbf{L}_{\mathrm{ODE}}(\theta,\Gamma_{\mathrm{ODE}})+\omega_{\mathrm{IC}}\mathbf{L}_{\mathrm{IC}}(\theta),
+\end{equation}
+
+where $\theta$ denotes the NN trainable parameters. The term $\mathbf{L}_{\mathrm{ODE}} (\theta, \Gamma_{\mathrm{ODE}} )$ measures the extent to which the NN approximation $\vec{y}_{\mathrm{NN}} (x)$ satisfies the governing differential equation at the interior collocation points, while $\mathbf{L}_{\mathrm{IC}} (\theta)$ measuring the accuracy with which the initial conditions are enforced. The pre-factors $\omega_{\mathrm{ODE}}$ and $\omega_{\mathrm{IC}}$ are real numbers being part of the hyperparameters of the problem. Explicitly, these losses are:
+
+\begin{equation}\label{eq:dbc_4}
+\mathbf{L}_{\mathrm{ODE}}(\theta,\Gamma_{\mathrm{ODE}})=\frac{1}{N}\sum_{x\in\Gamma_{\mathrm{ODE}}}\left\|\mathcal{D}\left(x,\vec{y}_{\mathrm{NN}},\vec{y}_{\mathrm{NN}}^{(1)},\vec{y}_{\mathrm{NN}}^{(2)},\ldots,\vec{y}_{\mathrm{NN}}^{(k)}\right)\right\|^2,
+\end{equation}
+
+and
+
+\begin{equation}\label{eq:dbc_5}
+\mathbf{L}_{\mathrm{IC}}(\theta)=\sum_{j=0}^{k-1}\left\|\vec{y}_{\mathrm{NN}}^{(j)}(x_0)-\vec{y}^{(j)}(x_0)\right\|^2,
+\end{equation}
+
+where the subscript NN denotes the quantities predicted by the PINN.
+
+The central idea of the DBC method is to improve the generalization properties of a PINN by progressively enriching the loss function with additional constraints. To this end, the domain over which the ODE is solved is partitioned into a sequence of subintervals. If we introduce a number of DBCs equal to $N_{\mathrm{DBC}}$, the number of subintervals becomes $N_{\mathrm{S}} = N_{\mathrm{DBC}} + 1$, which also corresponds to the number of required NN training runs, each involving a complete optimization over all epochs. Training is first performed on the subinterval containing the initial condition at $x_0$. Once the first training run convergence is achieved on the first subinterval, the network prediction at its endpoint is stored (the first DBC) and enforced as an additional constraint in the loss function for the second run, which includes the second subinterval. In other words, the training process is then continued on the subsequent subinterval, using the previously learned endpoint value to guide the solution. This procedure is repeated sequentially over all subintervals. In particular, the loss function for the final $N_{\mathrm{S}}$ training run (including all DBCs) is given by:
+
+\begin{equation}\label{eq:dbc_6}
+\mathbf{L}_{\mathrm{DBC}}(\theta)=\frac{1}{N_{\mathrm{DBC}}}\sum_{\alpha=1}^{N_{\mathrm{DBC}}}\left\|\vec{y}_{\mathrm{NN}}(\hat{X}_\alpha)-\hat{Y}_\alpha\right\|^2.
+\end{equation}
+
+This loss function measures the accuracy with which the DBC conditions are enforced at endpoints $\hat{X}_\alpha$ of the $\alpha$-th training-run/subinterval, where $\hat{Y}_\alpha$ is the saved PINN prediction on that training run. If the final training run is successful, $\vec{y}_{\mathrm{NN}}$ should provide a good approximation to the solution of the differential equation for the given initial conditions within the domain of interest.
+
+A final technical note. Two approaches may be employed in the algorithm: (i) the cumulative approach, which includes training points from both the current and all previous subintervals, or (ii) the individual subinterval-based approach, where the PINN is trained exclusively on points within the new subinterval. Regardless of the chosen approach, the final training run is performed over the entire domain.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CASE STUDIES AND APPLICATIONS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Case studies and applications}\label{sec:dbc_cases}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LIMITATIONS OF STANDARD PINNS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Limitations of standard PINNs}\label{sec:dbc_oscillator}
+
+We illustrate the challenges encountered by PINNs when applied to large domains and the corresponding DBC-based solution by considering the one-dimensional harmonic oscillator:
+
+\begin{equation}\label{eq:dbc_7}
+\frac{d^2y}{dx^2}=-y.
+\end{equation}
+
+The PINN takes values of $x$ as input and produces the corresponding predictions (approximations) for $y(x)$. The standard PINN consists of two loss terms, one for the differential equation and another for the initial conditions. That is,
+
+% SOURCE NOTE: PDF numerator reads dy_NN^2; rendered as d^2 y_NN to express the second derivative in Eq. (7).
+\begin{equation}\label{eq:dbc_8}
+\mathbf{L}_{\mathrm{ODE}}=\frac{1}{N}\sum_{i=1}^N\left(\frac{d^2y_{\mathrm{NN}}}{dx^2}(x_i)+y_{\mathrm{NN}}(x_i)\right)^2,
+\end{equation}
+
+for the differential equation and,
+
+\begin{equation}\label{eq:dbc_9}
+\mathbf{L}_{\mathrm{IC}}=\left(y_{\mathrm{NN}}(x_0)-y(x_0)\right)^2+\left(\frac{dy_{\mathrm{NN}}}{dx}(x_0)-\frac{dy}{dx}(x_0)\right)^2,
+\end{equation}
+
+for the initial conditions.
+
+The DBC loss for the final training run can be expressed as:
+
+\begin{equation}\label{eq:dbc_10}
+\mathbf{L}_{\mathrm{DBC}}=\frac{1}{N_{\mathrm{DBC}}}\sum_{\alpha=1}^{N_{\mathrm{DBC}}}\left(y_{\mathrm{NN}}(\hat{X}_\alpha)-\hat{Y}_\alpha\right)^2.
+\end{equation}
+
+The subscript NN indicates the predictions made by the PINN. Eq. \ref{eq:dbc_8} evaluates these parameters at a set of $N$ distinct points $x_i$, which corresponds to the training data. In Eq. \ref{eq:dbc_9}, the output of the PINN is evaluated at the coordinate corresponding to the initial conditions, $x_0$. As described in the previous section, $\hat{Y}_\alpha$ is the saved PINN prediction at $\hat{X}_\alpha$, the endpoint of the $\alpha$-th training-run/subinterval.
+
+% \begin{figure*}
+%   \centering
+%   \includegraphics[width=\textwidth]{figures/chapter_1/FIG_1.png}
+%   \caption{Comparison of PINN predictions (dots) with the exact solution (solid line) for the harmonic oscillator equation using the cumulative approach: (a) standard PINN ($N_{\mathrm{DBC}} = 0$); (b) PINN with two DBCs (square marks their location); and (c) PINN with five DBCs. (d) Box plot of the MAE between the PINN predictions and the exact solution across 10 independent training cycles, shown as a function of $N_{\mathrm{DBC}}$. The orange line shows the median, while the whiskers represent the minimum and maximum errors. The PINN results shown in panels (a)-(c) correspond to the lowest observed error. (e) Training losses associated with the lowest-error model for each DBC configuration in (d). Squares indicate the initial condition loss, $\mathbf{L}_{\mathrm{IC}}$. The ODE loss, $\mathbf{L}_{\mathrm{ODE}}$, is evaluated at $N_{\mathrm{train}}$ = 200 training points (circles) and validation points (triangles), with the latter chosen so that $N_{\mathrm{val}}$ = 10 $\times N_{\mathrm{train}}$.}
+%   \label{fig:dbc_FIG_1}
+% \end{figure*}
+
+The chosen PINN architecture has three hidden dense layers, each containing 500 neurons. The trainable parameters are initialized using the Glorot Uniform initializer, and the activation function employed is the hyperbolic tangent in all cases. We use the Adam optimizer with a learning rate of 5 $\times 10^{-5}$ for optimization. This setup will be used throughout this work unless otherwise stated. We emphasize, however, that the specific architecture is not critical: PINNs generally exhibit a high degree of robustness to choices such as the number of layers, neurons, or optimizers.
+
+Fig.~\ref{fig:dbc_FIG_1}(a) shows that a standard PINN without DBCs (red dots) fails to predict the solution to the harmonic oscillator equation $y_{\mathrm{exact}}=\cos(x)$ (black line) across a domain spanning multiple periods. The analytical solution is obtained for the initial conditions $y(x_0 ) = 1$ and $y' (x_0 ) = 0$ at $x_0 = 0$. For training, we use $N = 200$ points uniformly distributed across the interval $x \in [0, 20]$. Though trained on this interval, the PINN has difficulties capturing the harmonic behavior, leading to significant deviations from the actual solution, particularly as $x$ increases. This illustrates the limitations of the standard PINN when applied to ODEs with strongly oscillatory solutions over extended domains.
+
+An interesting tendency is observed in the prediction made by the standard PINN. Near the region where the initial conditions are imposed, the PINN prediction accurately approximates the analytical solution. However, as we move further from this point, the trend begins to deviate. In this situation, the solution asymptotically approaches the zero function, which, while valid, is not the solution to Eq. \ref{eq:dbc_7} for the specified initial conditions.
+
+The impact of introducing DBCs is demonstrated in Fig.~\ref{fig:dbc_FIG_1} (b) and (c); with two and five DBCs (represented by squares), the PINN predictions (shown as dots) perfectly match the exact solution. At this point, the deviation between the exact solution and the PINN prediction becomes evident in the standard PINN case, highlighting a critical limitation that is effectively addressed by incorporating DBCs.
+
+% \begin{figure*}
+%   \centering
+%   \includegraphics[width=\textwidth]{figures/chapter_1/FIG_2.png}
+%   \caption{Standard PINN vs. gradient-enhanced PINN (gPINN), with and without DBCs. Panels (a) and (b) show the exact solution (black solid line) together with the predictions obtained using the cumulative approach for the PINN (blue) and gPINN (red): (a) without DBCs ($N_{\mathrm{DBC}} = 0$) and (b) with DBCs ($N_{\mathrm{DBC}} = 2$). These results correspond to the lowest total loss reached during training. Panel (c) depicts the evolution of all loss terms during training for both the PINN and gPINN, corresponding to the results in panel (b). The gradient loss $\mathbf{L}_g$ is shown for comparison in the case of the standard PINN, although this term is not active in that case.}
+%   \label{fig:dbc_FIG_2}
+% \end{figure*}
+
+Note that the cumulative approach was used in Fig.~\ref{fig:dbc_FIG_1}, but the individual subinterval-based approach can also yield accurate solutions, as demonstrated in Fig. 1 in the Supplementary Material.
+
+This improvement is statistically supported, as evidenced by the box plots in Fig.~\ref{fig:dbc_FIG_1}(d), which depict the Mean Absolute Error (MAE) distributions obtained from 10 independent training cycles for each value of $N_{\mathrm{DBC}}$. The error bars (whiskers) indicate the maximum and minimum values of the error. The orange line indicates the median of the distribution.
+
+At first glance, the error observed in standard PINNs might appear to stem from difficulties in minimizing the loss during training. However, this is not the case. As shown in Fig.~\ref{fig:dbc_FIG_1}(e), the losses corresponding to the initial conditions $\mathbf{L}_{\mathrm{IC}}$ (squares) are very low in the standard PINN configuration ($\mathbf{L}_{\mathrm{IC}} \sim 10^{-7}$). The losses associated with the differential equation, $\mathbf{L}_{\mathrm{ODE}}$, remain low ($\sim 10^{-3}$) regardless of whether they are computed on the training or validation dataset (a denser dataset with ten points between each training pair). The absence of overfitting in this case is further confirmed by Fig. 2 (a) ($N_{\mathrm{DBC}} = 0$) and (b) ($N_{\mathrm{DBC}} = 5$) of the Supplementary Material, which plot $\mathbf{L}_{\mathrm{ODE}}$ as a function of $x$ for both datasets. This relatively small value would indicate a good performance of the PINN, considering that the oscillatory terms in Eq. \ref{eq:dbc_7} are generally of larger magnitude. This showcases that low-loss values do not necessarily guarantee accurate PINN predictions. This can be attributed to a common behavior in PINNs. Once the initial conditions are enforced, $\mathbf{L}_{\mathrm{ODE}}$ decreases at all collocation points, even though the resulting local solutions may no longer be consistent with the prescribed initial conditions.
+
+It is important to note that the number of DBCs, despite the intuitive expectation that increasing them should improve performance, cannot be used as a reliable indicator of solution accuracy. As depicted in Fig.~\ref{fig:dbc_FIG_1}(d), the associated error (minimum value in the box plot) increases when moving from $N_{\mathrm{DBC}} = 2$ to $N_{\mathrm{DBC}} = 3$, even though, as shown in panel (e), this change slightly reduces $\mathbf{L}_{\mathrm{ODE}}$. This trend is even more obvious in later examples.
+
+DBCs can be naturally integrated with other techniques designed to improve the performance and robustness of PINN architectures. In Fig.~\ref{fig:dbc_FIG_2}, we illustrate the combined application of DBCs with the gradient-enhanced PINN (gPINN) [REFs]. This technique is based on the properties of $\mathcal{D}$ (Eq. \ref{eq:dbc_1}). The method assumes that the exact solutions are smooth enough for the gradient of $\mathcal{D}$ to exist, thereby justifying the additional enforcement of its vanishing derivatives. For the harmonic oscillator example, this results in an additional loss term,
+
+% SOURCE NOTE: Eq. (11) equates the gradient-residual loss to dL_ODE/dx; retained literally, although these expressions are not generally equal.
+\begin{equation}\label{eq:dbc_11}
+\mathbf{L}_g=\frac{d\mathbf{L}_{\mathrm{ODE}}}{dx}=\frac{1}{N}\sum_{i=1}^N\left(\frac{d^3y_{\mathrm{NN}}}{dx^3}(x_i)+\frac{dy_{\mathrm{NN}}}{dx}(x_i)\right)^2.
+\end{equation}
+
+As shown in Fig.~\ref{fig:dbc_FIG_2}(a), the gPINN alone exhibits the same difficulty as the standard PINN in recovering the solution, even for the simple case of a harmonic oscillator when DBCs are not employed. Moreover, Fig.~\ref{fig:dbc_FIG_2}(b) indicates that adding the gradient loss to the total loss function does not lead to a noticeable improvement in accuracy once DBCs are included. Using gPINNs, the minimum loss values are achieved in fewer training epochs compared to standard PINNs, as clearly demonstrated by the loss evolution shown in Fig.~\ref{fig:dbc_FIG_2}(c). These loss curves correspond to the training run presented in panel (b). However, the inclusion of the additional term, which requires computing third-order derivatives, increases the computational time per epoch by approximately a factor of 1.6.
+
+For the remaining examples in the manuscript, we have not performed additional gPINN comparisons to isolate the discussion and focus specifically on the performance of the DBC approach, which is the central contribution of this work.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MULTISCALE PROBLEMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Multiscale problems}\label{sec:dbc_multiscale}
+
+The Fermat principle remains fundamental in geometric optics despite being formulated centuries ago. It inspires innovative applications, such as the recent development of generalized laws of reflection and refraction in metasurfaces [REFs]. Another example of the method's relevance is the study of light trajectories in GRaded-INdex (GRIN) media using the optical ray equation derived from the principle of minimal action. GRIN lenses offer significant advantages over traditional lenses, including their ability to miniaturize optical systems through compact designs while maintaining high-resolution imaging and efficient light transmission. The optical ray equation is also instrumental in the design of mini-endoscopes for probing deep brain regions [REFs], in the development of lightweight and miniaturized lens systems [REFs], and in the inverse reconstruction of refractive-index distributions from prescribed light trajectories [REFs]. The optical ray equation admits closed-form analytical solutions only in a limited set of simple geometries. Heterogeneous refractive-index distributions and realistic material optical properties (e.g., dispersion) typically give rise to differential equations for which analytical solutions are either intractable or entirely unavailable. In such cases, numerical methods or approximations are required to obtain a solution [REFs].
+
+We applied the standard PINN enhanced with the DBC method to the optical ray equation. Exemplarily, we calculated light paths around massive stellar objects (e.g., black holes), where the gravitational pull on light is modeled as an effective refractive index [REFs], based on the Schwarzschild metric [REFs],
+
+\begin{equation}\label{eq:dbc_12}
+n(r)=\frac{1}{1-r_s/r}.
+\end{equation}
+
+Here, $r_s=2GM/c^2$ is the Schwarzschild radius, which is composed of the gravitational constant $G$, the speed of light in vacuum $c$, the mass $M$, and the radial distance to the center of the astronomical object $r$.
+
+To describe the light path $\vec{r}$ in such an effective medium, we use the optical ray equation,
+
+\begin{equation}\label{eq:dbc_13}
+\frac{d}{ds}\left(n\frac{d\vec{r}}{ds}\right)=\nabla n,
+\end{equation}
+
+where the parameter $s$ represents the arc-length along the ray path.
+
+This is a clear example of multiscale behavior in ODEs, as evidenced by the dependence of the path light on the gradient of $n$, which strongly varies near the Schwarzschild radius.
+
+By limiting the problem to a plane that includes the massive object situated at the origin of the coordinate system and by expanding Eq. \ref{eq:dbc_13}, we can express the ray equation for the trajectory $\vec{r}=(x,y)$ in Cartesian coordinates as follows:
+
+\begin{equation}\label{eq:dbc_14}
+\begin{aligned}\frac{dp_x}{ds}&=\frac{\partial n(x,y)}{\partial x}=-n^2\frac{r_sx}{r^3},\\\frac{dp_y}{ds}&=\frac{\partial n(x,y)}{\partial y}=-n^2\frac{r_sy}{r^3}.\end{aligned}
+\end{equation}
+
+where $r=+\sqrt{x^2+y^2}$ and the momentum $\vec{p}=(p_x,p_y)=n\,d\vec{r}/ds$. Therefore:
+
+\begin{equation}\label{eq:dbc_15}
+\begin{aligned}\frac{dx}{ds}&=\frac{p_x}{n(x,y)},\\\frac{dy}{ds}&=\frac{p_y}{n(x,y)}.\end{aligned}
+\end{equation}
+
+To solve Eqs. \ref{eq:dbc_14} and \ref{eq:dbc_15}, we define a PINN whose input layer takes the arc-length parameter $s$, and whose output layer represents the four-dimensional vector $(x,y,p_x,p_y)$. The total loss function of the PINN is defined as $\mathbf{L} = \mathbf{L}_{\mathrm{ODE}} + \mathbf{L}_{\mathrm{C}}$, where $\mathbf{L}_{\mathrm{ODE}}$ accounts for the contributions from Eqs. \ref{eq:dbc_14} and \ref{eq:dbc_15} (i.e., the differential equation residuals), while $\mathbf{L}_{\mathrm{C}} = \mathbf{L}_{\mathrm{IC}} + \mathbf{L}_{\mathrm{DBC}}$, the contributions from the initial conditions and DBCs respectively. Explicitly:
+
+\begin{equation}\label{eq:dbc_16}
+\begin{aligned}
+\mathbf{L}_{\mathrm{ODE}}=\frac{1}{N}\sum_{i=1}^N\Bigg(&a_1\left[r^3\frac{dp_x^{\mathrm{NN}}}{ds}(s_i)+n^2r_sx_{\mathrm{NN}}(s_i)\right]^2\\
+&+a_2\left[r^3\frac{dp_y^{\mathrm{NN}}}{ds}(s_i)+n^2r_sy_{\mathrm{NN}}(s_i)\right]^2\\
+&+a_3\left[\frac{dx_{\mathrm{NN}}}{ds}(s_i)-\frac{p_x^{\mathrm{NN}}(s_i)}{n}\right]^2\\
+&+a_4\left[\frac{dy_{\mathrm{NN}}}{ds}(s_i)-\frac{p_y^{\mathrm{NN}}(s_i)}{n}\right]^2\Bigg),
+\end{aligned}
+\end{equation}
+
+and,
+
+\begin{equation}\label{eq:dbc_17}
+\begin{aligned}\mathbf{L}_{\mathrm{IC}}={}&b_1\left[x_{\mathrm{NN}}(s_0)-x_0\right]^2+b_2\left[y_{\mathrm{NN}}(s_0)-y_0\right]^2\\&+b_3\left[p_x^{\mathrm{NN}}(s_0)-p_{x_0}\right]^2+b_4\left[p_y^{\mathrm{NN}}(s_0)-p_{y_0}\right]^2.\end{aligned}
+\end{equation}
+
+The same mathematical expression as in Eq. \ref{eq:dbc_17} is used for $\mathbf{L}_{\mathrm{DBC}}$ with the phase-space vectors $\vec{\xi}=(\vec{r},\vec{p})$ taken from the set of DBCs.
+
+Here, the superscript NN denotes the quantities predicted by the PINN, so that $n = n(x_{\mathrm{NN}} , y_{\mathrm{NN}} )$. Eqs. \ref{eq:dbc_14} have been rearranged in Eq. \ref{eq:dbc_16} to avoid singularities for $r \rightarrow 0$. Eq. \ref{eq:dbc_17} is evaluated at the initial value of the parameter $s (s_0 )$, whereas Eq. \ref{eq:dbc_16} is evaluated at $s_i (i = 1, \ldots , N)$, corresponding to the training points. The hyperparameters $a_i$ and $b_i$ ($i=1,\ldots,4$) can be tuned to improve the performance of the PINN. In our case, $a_1 = 5$ and $a_2 = 10$, with all other values equal to one. This adjustment was based on initial tests, indicating that these components were more challenging to predict than other terms in the loss function.
+
+Regarding the NN, we used the same hyperparameters as those for the harmonic oscillator, except that here there are five dense hidden layers, each with 500 neurons. Similarly to the harmonic oscillator, the cumulative approach is employed.
+
+Fig.~\ref{fig:dbc_FIG_3}(a) shows the light paths computed using the PINN (dots) and compares them to calculations with the fourth-order Runge-Kutta (RK) method (solid lines). We choose $r_s = 1$ so that the light trajectory is neither perfectly straight nor does it collapse into the massive object within the region of space under consideration. Two distinct impact parameters have been chosen (in units of $r_s$): i) $(x_0,y_0)=(-12.5,6.25)$, and ii) $(x_0,y_0)=(-12.5,4.375)$. In both cases, the initial momentum is the same: $(p_{x_0},p_{y_0})=(12.5,0)$. In this case, $N = 200$ training points are used, evenly spaced within the range $s \in [0, 2]$. This range is large enough to capture the curvature of light induced by the massive object. The central circle denotes the radius of the massive object's event horizon.
+
+The PINN performs well with $N_{\mathrm{DBC}} = 0$ at $y_0 = 6.3$ because this trajectory of light is only minimally affected by the presence of the massive object. However, the agreement progressively deteriorates as the impact parameter decreases, as observed for $y_0 = 4.4$. For this scenario, the RK method predicts more pronounced light bending near the massive object than the PINN prediction without DBCs. As the light trajectory approaches the horizon of the massive object, the gravitational contribution from the source terms in Eqs. \ref{eq:dbc_14} and \ref{eq:dbc_15} increases sharply, creating a pronounced imbalance among the ODE terms and ultimately degrading the accuracy of the standard PINN predictions.
+
+Returning to Fig.~\ref{fig:dbc_FIG_3}(a), we see the impact of applying the DBC method during training for the trajectory with $y_0 = 4.4$. The inclusion of DBCs, represented by triangles and squares, mitigates the discrepancies observed when the trajectory approaches the singularity.
+
+To statistically validate the results, we trained 10 different PINNs for each $N_{\mathrm{DBC}}$ configuration corresponding to the ray path with the strongest bending ($y_0 = 4.4$). The results are presented in Fig.~\ref{fig:dbc_FIG_3}(b), where a box plot summarizes the statistical distribution of the error (MAE) between the PINN predictions and the RK method for each $N_{\mathrm{DBC}}$. Overall, agreement with the RK results generally improves as the number of DBCs increases, albeit not monotonically, a trend already found in the harmonic oscillator study. This is evident upon inspection of all the trajectories obtained with different DBCs (see Fig. 3 (a) and (b) of the Supplementary Material). As before, no clear correlation is observed between the error and the loss values. Fig. 4 in the Supplementary Material shows the validation-set error as a function of $\mathbf{L}_{\mathrm{ODE}}$, indicating that the lowest error, and thus the closest agreement between the PINN prediction and the RK solution, occurs at $N_{\mathrm{DBC}} = 7$.
+
+In Fig.~\ref{fig:dbc_FIG_3}(c), the losses $\mathbf{L}_{\mathrm{ODE}}$ and $\mathbf{L}_{\mathrm{IC}}$ corresponding to the lowest errors achieved during all training cycles are indicated by triangles (validation data), circles (training data), and squares (initial conditions). The ODE loss remains consistently low ($<10^{-4}$) across all cases, including the standard PINN, reinforcing the earlier observation from the harmonic oscillator study that a low loss value does not necessarily guarantee an accurate solution to the differential equation.
+
+As in the previous example, the individual subinterval-based approach produces accurate predictions, as shown in Fig. 5 of the Supplementary Material.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HIGHLY OSCILLATORY DYNAMICS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Highly oscillatory dynamics}\label{sec:dbc_lorenz}
+
+The Lorenz equations, originally conceived as a model to study atmospheric convection, revealed a system of three-dimensional differential equations exhibiting chaotic dynamics [REFs]. One of the most characteristic behaviors in chaotic systems is the appearance of regions in phase space toward which the system's trajectories converge, known as attractors, which present a strongly oscillatory dynamics. These equations are:
+
+% SOURCE NOTE: PDF Eqs. (18) and (19) use -c y_2, whereas the usual Lorenz system uses -c y_3. Retained as printed; verify before finalizing.
+\begin{equation}\label{eq:dbc_18}
+\begin{aligned}\frac{dy_1}{dx}&=a\cdot(y_2-y_1),\\\frac{dy_2}{dx}&=y_1\cdot(b-y_3)-y_2,\\\frac{dy_3}{dx}&=y_1y_2-cy_2.\end{aligned}
+\end{equation}
+
+where $a$ is the Prandtl number, and $b$ is the Rayleigh number.
+
+The corresponding PINN consists of a single input neuron for $x$ and three output neurons representing the predictions of $y_1 , y_2$, and $y_3$. The PINN's loss function is defined as before, $\mathbf{L} = \mathbf{L}_{\mathrm{ODE}} + \mathbf{L}_{\mathrm{C}}$, where $\mathbf{L}_{\mathrm{ODE}}$ includes the contributions from Eq. \ref{eq:dbc_18}, and $\mathbf{L}_{\mathrm{C}} = \mathbf{L}_{\mathrm{IC}} + \mathbf{L}_{\mathrm{DBC}}$ accounts for the contributions from both the initial conditions and DBCs. As before, $\mathbf{L}_{\mathrm{DBC}}$ has the same form as $\mathbf{L}_{\mathrm{IC}}$ but is evaluated at the DBCs. Mathematically:
+
+\begin{equation}\label{eq:dbc_19}
+\begin{aligned}
+\mathbf{L}_{\mathrm{ODE}}=\frac{1}{N}\sum_{i=1}^N\Bigg(&\alpha_1\left[\frac{dy_1^{\mathrm{NN}}}{dx}(x_i)-a\cdot\left(y_2^{\mathrm{NN}}(x_i)-y_1^{\mathrm{NN}}(x_i)\right)\right]^2\\
+&+\alpha_2\left[\frac{dy_2^{\mathrm{NN}}}{dx}(x_i)-y_1^{\mathrm{NN}}(x_i)\cdot\left(b-y_3^{\mathrm{NN}}(x_i)\right)+y_2^{\mathrm{NN}}(x_i)\right]^2\\
+&+\alpha_3\left[\frac{dy_3^{\mathrm{NN}}}{dx}(x_i)-y_1^{\mathrm{NN}}(x_i)y_2^{\mathrm{NN}}(x_i)+cy_2^{\mathrm{NN}}(x_i)\right]^2\Bigg),
+\end{aligned}
+\end{equation}
+
+
+
+% \begin{figure*}
+%   \centering
+%   \includegraphics[width=\textwidth]{figures/chapter_1/FIG_4.png}
+%   \caption{(a) Three-dimensional trajectory of the Lorenz attractor showing the RK solution (black line), the PINN prediction with DBCs (blue line), and the standard PINN prediction without DBCs (red line). (b)-(d) Individual components of the trajectory. The solid black line represents the RK solution with the exact initial conditions, the solid red line shows the standard PINN prediction, and the dashed blue line corresponds to the PINN with $N_{\mathrm{DBC}} = 800$. The dotted orange curve depicts the RK solution obtained using the initial conditions predicted by the PINN.}
+%   \label{fig:dbc_FIG_4}
+% \end{figure*}
+
+and,
+
+\begin{equation}\label{eq:dbc_20}
+\begin{aligned}\mathbf{L}_{\mathrm{IC}}(x_0)={}&\beta_1\left[y_1^{\mathrm{NN}}(x_0)-y_1(x_0)\right]^2\\&+\beta_2\left[y_2^{\mathrm{NN}}(x_0)-y_2(x_0)\right]^2+\beta_3\left[y_3^{\mathrm{NN}}(x_0)-y_3(x_0)\right]^2.\end{aligned}
+\end{equation}
+
+Consistent with previous notation, $x_i$ refers to the training coordinates, while $x_0$ denotes the initial point. The loss terms are weighted by $\alpha_i = 1$ and $\beta_i = 6000$ to prioritize the accurate enforcement of the initial conditions, which is critical for chaotic systems where small errors in the initial state can grow exponentially.
+
+We used the same hyperparameters and network architecture as in the harmonic oscillator case, with the only modification being the inclusion of a Fourier layer preceding the dense layers, which enhances convergence in systems exhibiting chaotic behavior [REFs].
+
+Given the complexity of the Lorenz dynamical system, we set $N_{\mathrm{DBC}} = 800$, as using a comparable number to that in previous examples leads to prediction breakdown before the onset of chaotic behavior. It should be noted, however, that no attempt was made to determine the optimal number of DBCs.
+
+To reduce the computational cost of solving the equations with a very large number of DBCs, we employ the individual subinterval-based approach described earlier, as it is more efficient than the cumulative approach in this case.
+
+Fig.~\ref{fig:dbc_FIG_4}(a) shows the solution obtained for the standard PINN (red line), the PINN with DBCs (blue dashed line), and the RK method with exact initial conditions (solid black line). In this example, we consider the interval $x \in [0, 20]$ with initial conditions $y_1 (0) = y_2 (0) = y_3 (0) = 1$. The parameters $a, b$, and $c$ are strictly positive and set to $a = 10, b = 28$, and $c = \frac{8}{3}$, a classic configuration known to produce chaotic behavior in the Lorenz system. Since this solution demands greater precision, the number of training points is significantly increased to $N = 6000$, compared to the previous examples.
+
+Notably, the standard PINN fails to produce a meaningful solution in the absence of DBCs, with its prediction remaining trapped at the initial condition for all $x$. This highlights the significant improvement in accuracy achieved by incorporating DBCs into the PINN framework.
+
+To facilitate a clearer comparison, Fig.~\ref{fig:dbc_FIG_4}(b)--(d) shows the Lorenz trajectory decomposed into its components. These plots demonstrate the good agreement between the PINN with DBCs and the RK solution, with deviations appearing only near the end of the domain. This discrepancy can be partly attributed to the chaotic nature of the Lorenz system, where small inaccuracies in the PINN predictions, such as at the initial point $x_0 = 0$, can grow exponentially over time, eventually leading to significant divergence from the reference trajectory. This becomes evident when the RK method is initialized with the PINN-predicted value at $x_0 = 0$ (orange dots) rather than the prescribed initial conditions. In this case, the agreement between the two solutions improves markedly. This indicates that the PINN accurately captures the structure of the Lorenz solution but corresponds to a slightly shifted initial condition.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CONCLUSIONS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusions}\label{sec:dbc_conclusions}
+
+We presented the DBC method as a way to improve the accuracy of PINN-based differential-equation solvers. The method works by dynamically reintroducing information obtained in earlier training phases to guide subsequent optimization. This approach addresses two key issues in PINNs: their tendency to converge to trivial solutions and to provide misleading results (incorrect predictions despite low losses), especially at points far from the initial conditions. These problems are particularly pronounced in differential equations with rapidly changing terms or strongly oscillatory solutions. Our tests on the optical ray equation and the chaotic Lorenz attractor showed that incorporating DBCs significantly improves PINN performance, providing a practical and effective strategy for implementing PINNs in complex scenarios. Although the present study focuses on ODEs, this framework already illustrates the benefits of DBC-enhanced PINNs. Extending the approach to PDEs remains a challenging problem and is beyond the scope of this work. Nevertheless, ongoing efforts suggest that DBCs may provide a valuable tool for mitigating some of the numerical difficulties encountered in PINN-based PDE solvers.
+
+\section*{CRediT authorship contribution statement}
+
+Andrés Martínez-Esteban: Methodology, Software, Investigation, Writing - original draft, Writing - review \& editing; Pablo Calvo-Barlés: Methodology, Investigation, Writing - review \& editing; Luis Martín-Moreno: Investigation, Writing - review \& editing; Sergio G. Rodrigo: Conceptualization, Supervision, Methodology, Software, Investigation, Writing - original draft, Writing - review \& editing.
+
+\section*{Data availability}
+
+All PINNs developed for this study were implemented using the Keras and TensorFlow libraries. An example implementation of the proposed method is available at GitHub repository. The repository contains a simplified version of the code that is sufficient to reproduce the core methodology.
+
+\section*{Declaration of competing interest}
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+
+\section*{Acknowledgements}
+
+The Spanish ``Ministerio de Ciencia, Innovación y Universidades'' supports and funds this work, \url{MICIU/AEI/10.13039/501100011033} under Grants No. PID2023-148359NB-C21 (also funded by FEDER, UE), No. CEX2023-001286-S (Severo Ochoa Centers of Excellence) and CEX2021-001144-S-20-10 (predoctoral research fellowship). We also acknowledge the Aragón Regional Government through project QMAD (E09\_23R).
+
+\section*{Supplementary material}
+
+Supplementary material associated with this article can be found in the online version at \url{https://doi.org/10.1016/j.cnsns.2026.109866}.
 
 \clearpage

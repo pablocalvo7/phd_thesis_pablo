@@ -3,7 +3,191 @@
 \label{chap:chapter_1}
 \thispagestyle{empty}
 
-This is a chapter...
+
+%%%%% INTRODUCTION %%%%%
+
+Symmetries play an essential role in the understanding of physical theories. For example, continuous symmetries lead to conservation laws [REFs], and discrete symmetries (such as parity or time reversal) are key in studying spectral degeneracies in quantum mechanical systems [REFs].
+
+Unveiling hidden symmetries is thus of immense interest in many fields of physics.  Until recently, this task relied solely on human intuition. However,  recent advances in Machine Learning (ML), and especially in Neural Networks (NN) [REFs], have opened up new and efficient ways of analyzing data. NNs have already been successfully employed in problems such as learning conservation laws and physically relevant parameters of dynamical systems [REFs]; finding coordinate transformations that reveal hidden symmetries [REFs]; learning Lie algebras [REFs]; discovering transformations that preserve the statistical distribution of data sets [REFs]; recognizing symmetries from NN embedding layers [REFs] and classifying whether pairs of events are related by symmetry or not [REFs].
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.085]{figures/chapter_1/FIG_1.png}
+    \caption{Schematic representation of the SSNN: Magnitudes $\vec{y}$ enter a standard NN, which yields a vector $\vec{x}_{\mathrm{NN}}^{(0)}$.  This NN is complemented with a set of $M$ branches.  The $\alpha$-th branch performs a linear transformation $\hat{W}_{\alpha} \vec{x}_{\mathrm{NN}}^{(0)}$, providing a prediction $\vec{x}_{\mathrm{NN}}^{(\alpha)}$ for the physical parameters.  Without the branches, the presence of symmetries would lead to incorrect predictions. In contrast, the SSNN, trained with the customized loss function given by Eq. \eqref{eq:loss}, predicts parameters accurately from available data.  After training, the branches $\hat{W}_{\alpha}$ provide a representation of the system's symmetry group.}
+    \label{fig:FIG_1}
+\end{figure}
+
+A common scenario not addressed in prior studies arises when the physical magnitudes of a system depend on parameters possessing a discrete set of symmetry transformations that leave these magnitudes invariant.  
+To find these transformations, we introduce the Symmetry Seeker Neural Network (SSNN), an NN architecture capable of discovering the matrix representation of all symmetry group elements solely from a dataset of physical parameters and their corresponding measurable magnitudes. Importantly, our approach demands no prior knowledge of the symmetry group or the mathematical relationships between parameters and physical properties. Additionally, the SSNN can tackle inverse design problems with symmetry-related multivalued solutions.
+
+The text is structured as follows: we first introduce the SSNN algorithm and showcase its effectiveness on a simple mathematical problem. Then, we apply this method to examples in nanophotonics and quantum chemistry.
+
+%%%%% METHOD %%%%%
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.057]{figures/chapter_1/FIG_2.png}
+    \caption{Iterative SSNN algorithm for $w = z^3$. (a) Learning curve with grey arrows indicating the epoch of branch removal. (b) Loss jump dependence with the number of branches. (c) $A_{\alpha}$ for $\alpha = 1,...,M$ at $M=5$ (above), $M=4$ (middle), and $M=3$ (below), with the black dashed line representing $1/K = 1/3$. Grey panels at $M=4,3$ indicate removed branches. (d) Predictions of the training data set from SSNN with $M=3$. Three points highlighted by black crosses represent predictions $\vec{x}_{\mathrm{NN}}^{(\alpha)}(\vec{y})$ from a single input data related by $\hat{D}_{\alpha}^{\mathrm{NN}}$. (e) Group metrics showing $d_{\mathrm{closed}}$ (red curves) and $d_{\mathrm{inverse}}$ (blue curves) for all branches (solid lines) and active branches (dashed lines). (f) Evolution of the distance between the $\hat{D}_{\alpha}^{\mathrm{NN}}$ and the ground truth matrix  $\hat{D}_{2}$ during the first training stage ($M = 7$). (g) Same as (f) for $\hat{D}_{3}$.}
+    \label{fig:FIG_2}
+\end{figure}
+
+To define the problem in general terms, we consider a function $\vec{y}(\vec{x})$, where the ``magnitudes'' $\vec{y} \in \mathbb{R}^m$ depend on the ``parameters'' $\vec{x} \in \mathbb{R}^n$. 
+The ``system'' may present discrete symmetries,  so symmetry-related parameters lead to the same magnitudes.  If so, the symmetry transformations form a finite group $G = \{ d_1,...,d_{K}\}$ of order $K$ with a $n \times n$ matrix representation $\{ \hat{D}_1,...,\hat{D}_K \}$ that satisfies:
+%
+\begin{equation}\label{eq:symmetry}
+\vec{y}(\vec{x}) = \vec{y}(\hat{D}_{\alpha}\vec{x}), \; \forall \vec{x}, \alpha.
+\end{equation}
+%
+We assume that all information about the system is represented by $N$ training samples $\{ ( \vec{x}_i , \vec{y}_i ) \}_{i=1}^N$ (where $\vec{y}_i = \vec{y}(\vec{x}_i)$).  The goal is to find an accurate prediction $\{ \hat{D}^{\mathrm{NN}}_{\alpha}\}_{\alpha = 1}^K$ of the unknown ground truth symmetry matrices $\{ \hat{D}_{\alpha}\}_{\alpha = 1}^K$.  
+
+%For that, we introduce the SSNN architecture, which is designed to find the inverse function $\vec{x} (\vec{y})$, which, if a symmetry relation presented in Eq. \eqref{eq:symmetry} holds, will be $K$-fold multivalued.
+
+For that, we introduce the SSNN architecture. It is designed to find the inverse function $\vec{x} (\vec{y})$ which, if a symmetry relation presented in Eq. \eqref{eq:symmetry} holds, will be $K$-fold multivalued. This NN depicted in Fig. \ref{fig:FIG_1}, takes $\vec{y}$ as input and outputs $M$ predictions, denoted as $\{ \vec{x}^{(\alpha)}_{\mathrm{NN}} \}_{\alpha=1}^{M}$ (where $i$ indexes training samples, $\alpha$ indexes symmetry matrices and $M$ is an hyperparameter). It comprises two parts. The first part is a neural network producing an $n$-dimensional vector $\vec{x}^{(0)}_{\mathrm{NN}}$, with its last layer termed the ``latent" layer.  The second part consists of $M$ trainable linear transformations $\hat{W}_{\alpha}$, referred to as branches, which generate $M$ $n$-dimensional vectors $\vec{x}^{(\alpha)}_{\mathrm{NN}} = \hat{W}_{\alpha} \vec{x}^{(0)}_{\mathrm{NN}}$.
+
+
+The SSNN's performance is guided by the loss function, given by:
+\begin{equation}\label{eq:loss}
+    L = \frac{1}{2N} \sum_i \min_{\alpha} L_i^{(\alpha)},
+\end{equation}
+where the loss associated to the $\alpha$-th branch is $L_i^{(\alpha)} = || \vec{x}_i - \vec{x}^{(\alpha)}_{\mathrm{NN}}(\vec{y}_i)||^2$, i.e., the mean square error between the branch prediction $\vec{x}^{(\alpha)}_{\mathrm{NN}}(\vec{y}_i)$ and the training sample $\vec{x}_i$.
+For each training data point $i$, only the branch with the lowest $L_i^{(\alpha)}$ (termed the ``winner" branch for point $i$) contributes to the loss $L$.  To evaluate how each branch contributes, we introduce the branch activity $A_{\alpha} = N_{\alpha}/N$, where $N_{\alpha}$ counts the number of times branch $\alpha$ produced winning predictions across the entire training dataset.
+
+Multibranched NNs have already been used in the past to tackle multivalued inverse designs [REFs]. However, the SSNN incorporates two modifications: first, the latent layer matches the parameter space's dimension, and second, branches are defined by linear transformations. These changes are crucial for establishing a link between branches and symmetry representation matrices, as shown in the subsequent analysis.
+%
+
+To find the symmetry group, we employ an iterative training method, where the least active branch is sequentially eliminated. The process is as follows: we begin by initializing the SSNN with a sufficiently large number of branches, denoted as $M_{\mathrm{max}}$ (which should exceed the group order $K$). The SSNN is then trained until the loss $L$ converges. At this point we compute the branch activities and remove the branch with the lowest $A_{\alpha}$.  This training and pruning cycle repeats until the network retains only one branch. Each cycle is termed a training stage, and we record the converged loss $L_c (M)$ at each stage. 
+
+For a practical demonstration, we apply our method to a mathematical example: the complex cube root $w=z^3$, where $z$ and $w$ are complex numbers.  This problem exhibits a symmetry group of rotations of order $K=3$ in the complex plane, as $z^3 = (e^{i2\pi / 3} z)^3 = (e^{i4\pi / 3} z)^3 , \; \forall z$.  Using the habitual terminology in Machine Learning, we associate $\vec{x} = (\mathrm{Re}(z),\mathrm{Im}(z))^T$ and $\vec{y} = (\mathrm{Re}(w),\mathrm{Im}(w))^T$, where $T$ states for transposition. The $2 \times 2$ symmetry matrices are:
+%
+\begin{equation}\label{eq:dalpha}
+    \hat{D}_{\alpha} = \begin{pmatrix}
+                        \cos{\theta_{\alpha}} & \sin{\theta_{\alpha}} \\
+                        -\sin{\theta_{\alpha}} & \cos{\theta_{\alpha}}
+                        \end{pmatrix},
+\end{equation}
+%
+with $\theta_{\alpha} = 2\pi (\alpha-1)/3 $, with $\alpha = 1,2,3$. 
+
+In order to find the symmetry relations using the SSNN, we train the model by randomly selecting 6000 values of $z$ with $|z|<10$. The main results are presented here, while the details of the training/validation data set generation, SSNN hyperparameters, and other examples for different root powers can be found in the Supplemental Material (SM) [REFs].
+
+The training process is illustrated in Fig. \ref{fig:FIG_2}. In Fig. \ref{fig:FIG_2}(a), we show the evolution of $L$ as $M$ decreases during the training epochs, starting from an initial value of $M_{\mathrm{max}} = 7$.  Figure \ref{fig:FIG_2}(b) shows the jump in the converged loss at consecutive stages, defined as $\Delta L_c (M) = L_c (M) - L_c (M+1)$. These plots indicate the presence of a symmetry group of order $K = 3$.  If $(\vec{y})^{-1}$ is a $K$-fold symmetry-multivalued function, $M \geq K$ predictions are required to fit all possible $(\vec{y})^{-1}$ solutions and achieve $L_c \simeq 0$.  However, when $M < K$, there are not enough branches to predict all possible solutions, leading to incorrect parameter predictions for certain data points, resulting in a significantly higher $L_c$.  This is apparent in Fig. \ref{fig:FIG_2}(b), where $\Delta L_c(M)$ leaps from $10^{-5}$ (for $M \geq 3$) to $10^{-1}$ (for $M < 3$), indicating that the group order is $K=3$.
+
+The branch activities further confirm this observation. In Fig. \ref{fig:FIG_2}(c) we depict $\{ A_{\alpha} \}_{\alpha = 1}^M$ at the end of stages $M = 5,4,3$.  In all cases, at the end of each training stage, precisely $K$ active branches exhibit $A_{\alpha} \simeq 1/3 = 1/K$, while the remaining $M-K$ branches are inactive and have $A_{\alpha} \simeq 0$.  This occurs because, during the training process, the activity of $K$ branches is sufficient to provide all solutions to $(\vec{y})^{-1}$. In contrast, the remaining branches become less active, contributing less often to the loss and ultimately becoming detached from the training refinement.
+
+Let's examine the active branches. Fig. \ref{fig:FIG_2}(d) shows the SSNN predictions $\vec{x}^{(\alpha)}_{\mathrm{NN}}(\vec{y}_i)$ ($\alpha = 1,...,M$) for every training sample $\vec{y}_i$ at the end of the stage $M=3$.  Each branch offers predictions within a distinct, non-overlapping irreducible region of the symmetry group, collectively covering the entire parameter space.  Additional plots of predictions from inactive branches for $M>K$, and a visualization of activities $A_{\alpha}$, are provided in the SM [REFs].
+
+Notably, we observe that 3-fold rotations transform each irreducible region into another, indicating a relationship between symmetry transformations and branch predictions.  In fact, we can extract the predicted symmetry matrices $\hat{D}_{\alpha}^{\mathrm{NN}}$ from the active branches $\hat{W}_{\alpha}$. 
+However, a degeneracy issue arises: any invertible matrix $\hat{A}$ fulfills $\hat{D}_{\alpha} \vec{x}^{(0)}_{\mathrm{NN}} = (\hat{D}_{\alpha}\hat{A}^{-1})(\hat{A}\vec{x}^{(0)}_{\mathrm{NN}})$, and thus there are infinite sets of  $ \{ \hat{W}_{\alpha} \}$ that yield the same loss.  To resolve this, we exploit the fact that any symmetry group includes the identity as an element. Hence, among the branches identified by the SSNN, we choose a reference matrix $\hat{W}_{\mathrm{ref}}$ (for definiteness, we choose $\hat{W}_{\mathrm{ref}} = \hat{W}_1$) and compute the predicted symmetry matrices as:
+%
+\begin{equation} 
+    \hat{D}^{\mathrm{NN}}_{\alpha} = \hat{W}_{\alpha} \hat{W}_{\mathrm{ref}}^{-1}.
+\end{equation}
+
+Apart from including the identity, a group must satisfy two other fundamental properties [REFs]:  closure under multiplication ($\forall \hat{D}_{\alpha}, \hat{D}_{\beta} \in G, \; \exists \hat{D}_{\gamma} \in G$ such that $\hat{D}_{\alpha}\hat{D}_{\beta} = \hat{D}_{\gamma}$), and the inverse of every group element must also be a group element ($\forall \hat{D}_{\alpha} \in G, \; \exists \hat{D}_{\gamma} \in G$ such that $\hat{D}_{\alpha}\hat{D}_{\gamma} = \hat{D}_{\gamma}\hat{D}_{\alpha} = \hat{1}$).  Since these two properties are not enforced in our calculation, we can employ them to validate the found symmetry matrices.  For this purpose, we define two group metrics as functions of $\{ \hat{D}_{\alpha}^{\mathrm{NN}} \}$ that quantify how well these matrices satisfy the group properties. For that, we first define a distance measure between two arbitrary matrices $\hat{A}$ and $\hat{B}$:
+%
+\begin{equation}
+    d( \hat{A} , \hat{B} ) = \frac{1}{n^2} \sum_{k l} |a_{kl} - b_{kl}|,
+\end{equation}
+%
+where $k$ and $l$ index the matrix elements and $n$ is the dimension of the matrices. The metric for determining whether the set $\{ \hat{D}^{\mathrm{NN}}_{\alpha} \}$ is closed under multiplication (``closed metric'') is defined as,
+%
+\begin{equation}\label{eq:dclosed}
+    d_{\mathrm{closed}} (\{ \hat{D}^{\mathrm{NN}}_{\alpha} \}) = \frac{1}{M^2} \sum_{\alpha \beta} \min_{\gamma} d( \hat{D}^{\mathrm{NN}}_{\alpha}\hat{D}^{\mathrm{NN}}_{\beta} , \hat{D}^{\mathrm{NN}}_{\gamma}),
+\end{equation}
+%
+Similarly, the ``inverse metric" quantifies whether the set ${\hat{D}^{\mathrm{NN}}_{\alpha}}$ has an inverse belonging to the set:
+%
+\begin{equation}\label{eq:dinverse}
+    d_{\mathrm{inverse}}(\{ \hat{D}^{\mathrm{NN}}_{\alpha} \}) = \frac{1}{M} \sum_{\alpha} \min_{\gamma} d( \left[ \hat{D}^{\mathrm{NN}}_{\alpha}\right]^{-1}, \hat{D}^{\mathrm{NN}}_{\gamma} ).
+\end{equation}
+%
+The matrices $\{ \hat{D}^{\mathrm{NN}}_{\alpha} \}$ form a group if and only if $d_{\mathrm{closed}} = d_{\mathrm{inverse}} = 0$.
+
+In Fig. \ref{fig:FIG_2}(e), we evaluate the existence of a symmetry group using two different approaches.
+
+In the first approach, we compute the group metrics by considering all predicted matrices, both from active and inactive branches. For $M = K = 3$, both closed and inverse metrics approach zero, confirming that these matrices indeed form a group. However, when $M < K$, the predicted matrices do not fulfill the group properties after multiplication or inversion, causing an increase in the group metrics. Similarly, for $M > K$, inactive branches are not sufficiently optimized, yielding matrices that do not form a group representation, causing a rise in the group metrics.
+
+In the second approach, even for $M>K$, we only consider predicted matrices from the active branches, excluding the inactive branches. The closed and inverse metrics remain small indicating that, even when $M$ exceeds the group order, the subset of active branches accurately predict the group representation.
+
+In this simple example of the cubic root, where we know the ground truth symmetry matrices $\{ \hat{D}_{\alpha} \}$, we can monitor the optimization progress of the predicted $\hat{D}_{\alpha}^{\mathrm{NN}}$ during the initial training stage. Figure \ref{fig:FIG_2}(f) displays the distances between each predicted $\hat{D}_{\alpha}^{\mathrm{NN}}$ and $\hat{D}_2$ (see Eq. \eqref{eq:dalpha}), while Figure \ref{fig:FIG_2}(g) does the same for $\hat{D}_3$ (we omit the curve for the identity transformation since $\hat{D}_{1}=\hat{D}^{\mathrm{NN}}_{1}$ by design). In each panel, one of the curves (corresponding to a particular active branch) reaches a value significantly smaller than that of the other curves.  This confirms that the set $\{ \hat{D}_{\alpha}^{\mathrm{NN}} \}$ from active branches provide an excellent approximation to the exact $\{ \hat{D}_{\alpha} \}$.
+
+%%%%% DIELECTRIC MULTI-LAYER %%%%%
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.043]{figures/chapter_1/FIG_3.png}
+    \caption{ Optical transmittance spectra symmetries in a multilayer stack:
+(a) Schematic representation of the considered photonic system.
+(b) Loss jump variation with the number of branches. The inset displays $A_{\alpha}$ for $\alpha = 1,...,M$ at three different stages: $M=4,3,2$. The black dashed line represents $1/K = 1/2$. The grey regions at $M=3,2$ indicate the removed branches.
+(c) Group metrics depicted as a function of $M$.
+(d)  SSNN predictions as a function of the true values of $\varepsilon_1$, $\varepsilon_2$, and $\varepsilon_3$. }
+    \label{fig:FIG_3}
+\end{figure}
+
+To show the generality of the method, let us now apply the SSNN to two physical examples. The first one involves a dielectric three-layer stack (Fig. \ref{fig:FIG_3}(a)), each layer having a width $d=250\; \mathrm{nm}$, and dielectric constants $\varepsilon_i$ ($i = 1,2,3$) ranging from 2 to 5.  An electromagnetic plane wave with wavelength $\lambda$ impinges the stack at normal incidence. 
+By solving Maxwell's equations, we compute the transmittance spectrum $T(\lambda)$ 
+for a given set $\left\{  \varepsilon_i \right\}$ (see the SM [REFs] for details).  The mapping here relates the parameters $\vec{x} = (\varepsilon_1, \varepsilon_2,\varepsilon_3)^T$ to a transmittance spectrum evaluated at discrete wavelengths $\vec{y} = \left[ T(\lambda_1),...,T(\lambda_k),..., T(\lambda_m)\right]^T$.  We use $m=100$ $\lambda$'s, evenly distributed between $500 \; \mathrm{nm}$ and $900 \; \mathrm{nm}$.  Time reversal symmetry implies that the transmittance remains invariant when the stack order is inverted [REFs]. 
+Thus, the problem presents a symmetry group consisting of the identity ($\hat{D}_1$) and the inversion in the ordering of $\{\varepsilon_i \}$ ($\hat{D}_2$).
+
+Figure \ref{fig:FIG_3}(b) shows $\Delta L_c (M)$, with an initial SSNN setup of $M_{\mathrm{max}}= 7$ branches.  The substantial jump of $\Delta L_c (M)$ by several orders of magnitude for $M<2$ strongly indicates that the group order is $K=2$.  Further evidence is seen in the inset of that panel,  showing that, even for $M>2$, there are two active branches with $A_{\alpha} \simeq 1/2$.  The closed and inverse metrics, as depicted in Fig. \ref{fig:FIG_3}(c) affirm that the matrices corresponding to the active branches indeed form a group (the SM [REFs] shows that $\hat{D}_{2}^{\mathrm{NN}}$ converges to $\hat{D}_{2}$). 
+%
+
+Finally, we showcase the potential of the proposed method in inverse design. To achieve this, we employ the SSNN prediction from the winner branch denoted as $(\varepsilon_1^{\mathrm{NN}}, \varepsilon_2^{\mathrm{NN}}, \varepsilon_3^{\mathrm{NN}})$ for each data point.
+
+Figure \ref{fig:FIG_3}(d) displays the comparison between the ground truth $\varepsilon_{k}$ and the corresponding $\varepsilon_{k}^{\mathrm{NN}}$ for all multilayer stacks in the validation set.  The results show an excellent agreement, confirming the method's effectiveness in providing inverse design solutions for all symmetry-related cases.
+
+%%%%% TIGHT-BINDING %%%%%
+
+Lastly, we apply our method to molecular systems in which discrete symmetry groups play an important role. We analyze two different scenarios of increasing complexity. In both cases, molecules are described by a tight-binding model with one orbital per atom.
+
+In the first scenario, we consider molecules with 4 atoms, each one of them with an orbital energy $e_i$ ($i=1,...,4$).  We assume electron hopping only between nearest-neighbor atoms, with a hopping parameter $J=1$, serving as our energy unit. The molecule's geometry defines the hopping terms (see the SM [REFs] for details). The molecular electronic energies are denoted as $E_i$, for $i=1,...,4$. Here, the mapping $\vec{y}$ relates a tuple of atomic energies, $\vec{x} = (e_1,e_2,e_3,e_4)^T$, to a tuple of molecular eigenvalues, $\vec{y} = (E_1,E_2,E_3,E_4)^T$. 
+%
+We explore three different molecular geometries: rectangular, square, and tetrahedral [see insets in Figs. \ref{fig:FIG_4}(a,c,e)]. 
+For each geometry, we generate 100,000 ``molecules'' by randomly selecting values for $\{e_{i}\}$ (ranging from 1 to 6) and solving the Schr\"odinger equation to determine $\{E_{i}\}$. 
+The symmetry transformations of each molecule preserve the set of eigenvalues and include rotations, reflections, and improper rotations. The group orders are $K = 4$ for the rectangle, $K = 8$ for the square, and $K = 24$ for the tetrahedron. These transformations imply that certain permutations of the atomic energies $\{e_{i}\}$ result in the same $\{e_{i}\}$. For instance, in the square molecule, a $\pi / 2$ rotation is given by the transformation $\hat{D}$ such that $\hat{D}(e_1,e_2,e_3,e_4)^T = (e_4,e_1,e_2,e_3)^T$. 
+
+For each molecular geometry, we train a different SSNN.  The corresponding $\Delta L_c (M)$ is presented in Figures \ref{fig:FIG_4}(a,c,e), while Figures \ref{fig:FIG_4}(b,d,f) display the corresponding closed and inverse group metrics, considering either all branches or only the active ones. 
+%
+The presence of jumps in $\Delta L_c (M)$ and the behavior of the group metrics as $M$ changes clearly indicate that the SSNN consistently identifies the correct group order and symmetry matrices. This conclusion is further supported by the convergence of the predicted matrices to the ground truth matrices, as shown in the SM [REFs]. 
+
+Notably, for each molecular geometry, deep minima appear in both $d_{\mathrm{closed}}(M)$ and $d_{\mathrm{inverse}}(M)$ at values $M<K$. These minima correspond to the set $\{ \hat{D}_{\alpha}^{\mathrm{NN}} \}$ forming a subgroup. For instance,  for the tetrahedron, for $M = 12$ the set $\{ \hat{D}_{\alpha}^{\mathrm{NN}} \}$ represents the subgroup consisting of the identity, 3 $C_2$ rotations, and the 8 $C_3$ rotations.
+
+\begin{figure}
+    \centering
+    %0.055
+    \includegraphics[scale=0.056]{figures/chapter_1/FIG_4.png}
+    \caption{ Applying SSNN to discover symmetries in a 4-atom molecular spectra. For each molecular geometry (rectangle, square, tetrahedron), we present the dependence with the number of branches of both the loss jump and the group metrics (circles: all branches are considered; triangles: only active branches are included in the calculation). Figures (a-b), (c-d), and (e-f) correspond to the rectangular, square, and tetrahedral molecules, respectively. }
+    \label{fig:FIG_4}
+\end{figure}
+
+In the second scenario, we consider a more complex system, where the 
+parameter space has more degrees of freedom, and the symmetry group exhibits a more complicated structure. 
+The molecular geometry is depicted in the inset to Fig. \ref{fig:FIG_5}(a). The 5 atoms represented in red have an atomic energy $\mu$, while the energy of the 8 atoms in blue is taken randomly.  Only nearest-neighbor hoppings are considered;  in all cases, its value is $J$, except for the 4 blue atoms forming the central ring  (atoms 3-6) where the hopping is $J'$.  For definiteness, in this example, we have taken the arbitrary values $\mu=-1$, $J=3$, $J' = 0.5$. 
+As in the previous example, we generate 100,000 "molecules" by randomly selecting values for $\{ e_i \}$ within the interval [1,6]. In this case, $\vec{x} = (e_1, ..., e_8)^T$ and the magnitudes are the 13 molecular eigenvalues, $\vec{y} = (E_1, ..., E_{13})^T$.
+
+We implement the SSNN's training procedure starting with $M_{\mathrm{max}} = 80$ branches (further details of the SSNN architecture can be found in the SM [REFs]). Figure \ref{fig:FIG_5}(a) shows the loss jump $\Delta L_c (M)$ and Figure \ref{fig:FIG_5}(b) shows the group metrics, both as a function of the decreasing $M$.  The jump in $\Delta L_c$  and the simultaneous minimum of the group metrics when all branches are considered that occur at $M=64$ strongly indicate that the system presents a symmetry group of order $K = 64$.  An analysis of the branch activities reinforces this result;  there are always 64 active branches for $M \geq K$ (see the SM [REFs]).
+Notice that the combination of all considered metrics allows the unambiguous detection of the underlying symmetry, even when the group order is larger than in the previously considered examples and, thus, the relative variation of the metrics is smaller when one branch is removed away from the optimum architecture $M=K$.
+
+
+\begin{figure}
+    \centering
+    %0.055
+    \includegraphics[width=\columnwidth]{figures/chapter_1/FIG_5.png} %scale=0.125
+    \caption{ Application of SSNN to discover symmetries in spectra of a complex chain-like molecule with randomly coupled atoms.  The inset to (a) shows a schematic representation of the molecule geometry.  The atoms in blue have random atomic energy $\epsilon_{i} \in [1,-6]$, while those in red have energy $\mu=-1$. Only nearest-neighbor hoppings are considered;  in all cases, its value is $J=3$, except for the 4 blue atoms forming the central ring  (atoms 3-6) where the hopping is $J'=0.5$.  
+(a) Loss jump as a function of the decreasing number of branches. (g) Group metrics vs. the number of branches, when either all branches or only the active ones are included in the calculation. }
+    \label{fig:FIG_5}
+\end{figure}
+
+In this study, we introduced the SSNN, a neural network architecture that can uncover discrete symmetries in parameter space that leaves the system invariant, providing both the group order and the group representation. 
+
+Importantly, the SSNN method relies solely on a training dataset without requiring prior knowledge of either the system symmetry, the function $\vec{y}(\vec{x})$, or an oracle approximation of $\vec{y}$. 
+Additionally to the unveiling of symmetries, the SSNN can be used to perform inverse design in symmetric systems, identifying all sets of symmetry-related parameters that yield specific magnitudes in the target physical system. 
+
+We acknowledge Project PID2020-115221GB-C41, financed by MCIN/AEI/10.13039/501100011033, and the Aragon Government through Project Q-MAD. 
+%
+The code for this paper can be found online at [REFs].
+
+
 
 
 \clearpage
